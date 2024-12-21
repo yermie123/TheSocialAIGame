@@ -12,9 +12,13 @@
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.15.0",
     "@solidjs/start": "^1.0.10",
+    "animejs": "^3.2.2",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "pg": "^8.13.1",
+    "picnic": "^7.1.0",
+    "pocketbase": "^0.24.0",
+    "sass": "^1.83.0",
     "solid-js": "^1.9.2",
     "vinxi": "^0.4.3"
   },
