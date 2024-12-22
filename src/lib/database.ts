@@ -27,7 +27,6 @@ interface VoterAnswers {
 }
 
 const createNewQuestion = async (
-  model: string,
   question: string,
   answerType: "majority_vote" | "top_vote_weighted" | "top_vote",
   voterAnswers: VoterAnswers
@@ -85,18 +84,29 @@ const createNewQuestion = async (
       answers[0].votes = 2;
     }
 
-    await pool.query({
+    const JSONAnswers = JSON.stringify(answers);
+    const JSONAnswerInfo = JSON.stringify(answerInfo);
+
+    // This query below is only really acceptable because the jsonb values are empty
+    const result2 = await pool.query({
       text: `
           UPDATE game_questions
           SET answer_info = answer_info || $1,
               answers = answers || $2
           WHERE id = $3
         `,
-      values: [answerInfo, answers, questionId],
+      values: [JSONAnswerInfo, JSONAnswers, questionId],
     });
+
+    if (result2 && result2.rowCount) {
+      return result2.rowCount > 0;
+    } else {
+      return false;
+    }
   } catch (error) {
     console.error(error);
+    return false;
   }
 };
 
-export { pool };
+export { createNewQuestion };

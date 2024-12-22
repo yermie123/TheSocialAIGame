@@ -4,6 +4,7 @@ import pb from "~/lib/pb";
 import { useNavigate } from "@solidjs/router";
 import { Title } from "@solidjs/meta";
 import "./databasefill.scss";
+import { createNewQuestion } from "~/lib/database";
 
 /* Route Guard as a One-page Higher Order Component */
 const DatabaseFill: Component = () => {
@@ -44,10 +45,62 @@ const DatabaseFill: Component = () => {
 const DatabaseFillInner: Component = () => {
   const [dbquestions, dbquestionsSet] = createSignal([]);
   const [newQuestion, setNewQuestion] = createSignal(false);
+  const [queryResult, setQueryResult] = createSignal("unknown");
 
   onMount(() => {
     console.log("inner mounted");
   });
+
+  const populateDB = async () => {
+    // Check if new question or modify existing question
+    if (newQuestion()) {
+      // Check for empty inputs
+      if (
+        !(document.getElementById("new-question") as HTMLTextAreaElement)
+          .value ||
+        !(document.getElementById("new-response-1") as HTMLInputElement)
+          .value ||
+        !(document.getElementById("new-response-2") as HTMLInputElement)
+          .value ||
+        !(document.getElementById("new-response-3") as HTMLInputElement).value
+      ) {
+        alert("Please fill in all inputs");
+        return;
+      }
+
+      let result = await createNewQuestion(
+        (document.getElementById("new-question") as HTMLTextAreaElement).value,
+        (document.getElementById("new-answer-type") as HTMLSelectElement)
+          .value as "majority_vote" | "top_vote_weighted" | "top_vote",
+        {
+          voter: (document.getElementById("new-ai-models") as HTMLInputElement)
+            .value,
+          answers: {
+            a: (document.getElementById("new-response-1") as HTMLInputElement)
+              .value,
+            b: (document.getElementById("new-response-2") as HTMLInputElement)
+              .value,
+            c: (document.getElementById("new-response-3") as HTMLInputElement)
+              .value,
+          },
+        }
+      );
+
+      if (result) {
+        setQueryResult("success");
+        setTimeout(() => {
+          setQueryResult("unknown");
+        }, 2000);
+      } else {
+        setQueryResult("error");
+        setTimeout(() => {
+          setQueryResult("unknown");
+        }, 2000);
+      }
+    } else if (!newQuestion()) {
+      alert("Not implemented to aid existing questions yet");
+    }
+  };
 
   return (
     <main>
@@ -71,7 +124,8 @@ const DatabaseFillInner: Component = () => {
             <button onClick={() => setNewQuestion(false)}>
               Add Response to Existing Question Instead
             </button>
-            <select name="ai-models" id="ai-models">
+            <label for="new-ai-models">AI Model:</label>
+            <select name="new-ai-models" id="new-ai-models">
               <option value="chatgpt">Chat GPT (GPT-3.5)</option>
               <option value="codeium">Codeium</option>
               <option value="claude">Claude</option>
@@ -81,17 +135,24 @@ const DatabaseFillInner: Component = () => {
               <option value="deepseek">DeepSeek</option>
               <option value="cohere">Cohere (Aya?)</option>
             </select>
+            <input id="radiodemo" checked type="radio" name="radiodemo" />
+            <label for="new-answer-type">Answer Type:</label>
+            <select name="new-answer-type" id="new-answer-type">
+              <option value="majority_vote">Majority Vote</option>
+              <option value="top_vote_weighted">Top Vote Weighted</option>
+              <option value="top_vote">Top Vote</option>
+            </select>
             <div>
               <label for="new-question">New Question:</label>
-              <input type="text" id="new-question" name="new-question" />
+              <textarea id="new-question" name="new-question" />
             </div>
             <div>
-              <label for="first-responses">New Question Response 1:</label>
-              <input type="text" id="first-response-1" name="first-responses" />
-              <label for="first-responses">New Question Response 2:</label>
-              <input type="text" id="first-response-2" name="first-responses" />
-              <label for="first-responses">New Question Response 3:</label>
-              <input type="text" id="first-response-3" name="first-responses" />
+              <label for="new-response-1">New Question Response 1:</label>
+              <input type="text" id="new-response-1" name="new-response-1" />
+              <label for="new-response-2">New Question Response 2:</label>
+              <input type="text" id="new-response-2" name="new-response-2" />
+              <label for="new-response-3">New Question Response 3:</label>
+              <input type="text" id="new-response-3" name="new-response-3" />
             </div>
           </>
         }
@@ -100,6 +161,7 @@ const DatabaseFillInner: Component = () => {
         <button onClick={() => setNewQuestion(true)}>
           Add New Question Instead
         </button>
+        <label for="ai-models">AI Model:</label>
         <select name="ai-models" id="ai-models">
           <option value="chatgpt">Chat GPT (GPT-3.5)</option>
           <option value="codeium">Codeium</option>
@@ -110,23 +172,44 @@ const DatabaseFillInner: Component = () => {
           <option value="deepseek">DeepSeek</option>
           <option value="cohere">Cohere (Aya?)</option>
         </select>
+        <label for="answer_type">Answer Type:</label>
+        <select name="answer_type" id="answer_type">
+          <option value="majority_vote">Majority Vote</option>
+          <option value="top_vote_weighted">Top Vote Weighted</option>
+          <option value="top_vote">Top Vote</option>
+        </select>
         <div>
           <h3>Add Responses: </h3>
           <div>
             <label for="question-id">Question ID:</label>
-            <input type="text" id="question-id" name="question-id" />
+            <textarea id="question-id" name="question-id" />
           </div>
           <div>
-            <label for="new-responses">New Response 1:</label>
-            <input type="text" id="new-responses" name="new-responses" />
-            <label for="new-responses">New Response 2:</label>
-            <input type="text" id="new-responses" name="new-responses" />
-            <label for="new-responses">New Response 3:</label>
-            <input type="text" id="new-responses" name="new-responses" />
+            <label for="existing-response-1">New Response 1:</label>
+            <input
+              type="text"
+              id="existing-response-1"
+              name="existing-response-1"
+            />
+            <label for="existing-response-2">New Response 2:</label>
+            <input
+              type="text"
+              id="existing-response-2"
+              name="existing-response-2"
+            />
+            <label for="existing-response-3">New Response 3:</label>
+            <input
+              type="text"
+              id="existing-response-3"
+              name="existing-response-3"
+            />
           </div>
         </div>
       </Show>
-      <button>Populate Database with Data</button>
+      <Show when={queryResult() === "success" || queryResult() === "error"}>
+        <h3>{queryResult()}</h3>
+      </Show>
+      <button onClick={() => populateDB()}>Populate Database with Data</button>
     </main>
   );
 };
