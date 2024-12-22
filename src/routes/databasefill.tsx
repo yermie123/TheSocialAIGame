@@ -55,7 +55,7 @@ const DatabaseFillInner: Component = () => {
       <div>
         <h3>List of Questions and their ID's</h3>
         <For each={dbquestions()}>
-          {(question) => (
+          {(question: any) => (
             <div>
               <p>Question ID: {question.id}</p>
               <p>Question: {question.question}</p>
