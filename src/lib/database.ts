@@ -65,11 +65,23 @@ const createNewQuestion = async (
       };
     }
 
-    const answers = voterAnswers.answers.map((answer: any) => ({
-      answer,
-      votes: 1,
-    }));
+    const answers = [
+      // Create an array of answers, with 1 vote for each
+      {
+        answer: voterAnswers.answers.a,
+        votes: 1,
+      },
+      {
+        answer: voterAnswers.answers.b,
+        votes: 1,
+      },
+      {
+        answer: voterAnswers.answers.c,
+        votes: 1,
+      },
+    ];
     if (answerType === "top_vote_weighted") {
+      // If top vote weighted, give 2 votes to first answer
       answers[0].votes = 2;
     }
 
