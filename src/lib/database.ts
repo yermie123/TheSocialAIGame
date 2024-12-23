@@ -109,4 +109,14 @@ const createNewQuestion = async (
   }
 };
 
-export { createNewQuestion };
+const getAllQuestions = async () => {
+  try {
+    const result = await pool.query("SELECT * FROM game_questions");
+    return result.rows;
+  } catch (error) {
+    console.error(error);
+    return "error";
+  }
+};
+
+export { createNewQuestion, getAllQuestions };
