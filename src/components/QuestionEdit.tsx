@@ -1,4 +1,4 @@
-import { createSignal, For } from "solid-js";
+import { createEffect, createSignal, For, onMount } from "solid-js";
 import type { Component } from "solid-js";
 
 const QuestionEdit: Component<{
@@ -7,6 +7,40 @@ const QuestionEdit: Component<{
   selectQuestion: (value: any) => void;
   questionSpotlight: () => any;
 }> = (props) => {
+  const [modelOptions, modelOptionsSet] = createSignal([
+    "chatgpt",
+    "codeium",
+    "claude",
+    "llama",
+    "piai",
+    "mistral",
+    "deepseek",
+    "cohere",
+  ]);
+  const [currentAnswers, currentAnswersSet] = createSignal<any[]>([]);
+
+  createEffect(() => {
+    if (props.questionSpotlight().answer_type !== "") {
+      handleModelLimitations();
+    }
+  });
+
+  const handleModelLimitations = () => {
+    // Check for any existing answers and remove those models from the modelOptions list
+    const existingModels = [
+      ...Object.keys(props.questionSpotlight().answer_info),
+    ];
+    modelOptionsSet((prev: any) =>
+      prev.filter((model: any) => !existingModels.includes(model))
+    );
+    console.log("new model options: ", modelOptions());
+  };
+
+  const addCurrentAnswers = () => {
+    const tempAnswers = Object.values(props.questionSpotlight().answers);
+    currentAnswersSet(tempAnswers);
+  };
+
   return (
     <>
       <h3>Editing Existing Questions Here</h3>
@@ -25,50 +59,37 @@ const QuestionEdit: Component<{
           </For>
         </div>
       </div>
-      <div id="existing-questions" class="modal">
-        <input id="modal_1" type="checkbox" />
-        <label for="modal_1" class="overlay"></label>
-        <article>
-          <header>
-            <h3>Great offer</h3>
-            <label for="modal_1" class="close">
-              &times;
-            </label>
-          </header>
-          <section class="content">
-            We have a special offer for you. I am sure you will love it! However
-            this does look spammy...
-          </section>
-          <footer>
-            <a class="button" href="#">
-              See offer
-            </a>
-            <label for="modal_1" class="button dangerous">
-              Cancel
-            </label>
-          </footer>
-        </article>
-      </div>
-      <label for="ai-models">AI Model:</label>
+      <label for="ai-models">Unmodified Models:</label>
       <select name="ai-models" id="ai-models">
-        <option value="chatgpt">Chat GPT (GPT-3.5)</option>
-        <option value="codeium">Codeium</option>
-        <option value="claude">Claude</option>
-        <option value="llama">Llama (Meta AI)</option>
-        <option value="piai">Pi</option>
-        <option value="mistral">Mistral</option>
-        <option value="deepseek">DeepSeek</option>
-        <option value="cohere">Cohere (Aya?)</option>
+        <For each={modelOptions()}>
+          {(model: any) => <option value={model}>{model}</option>}
+        </For>
       </select>
       <label for="answer_type">Answer Type:</label>
-      <select name="answer_type" id="answer_type">
-        <option value="majority_vote">Majority Vote</option>
-        <option value="top_vote_weighted">Top Vote Weighted</option>
-        <option value="top_vote">Top Vote</option>
-      </select>
+      <h4>{props.questionSpotlight().answer_type}</h4>
       <div>
         <h3>Question: </h3>
         <h4>{props.questionSpotlight().question}</h4>
+      </div>
+      <div id="add-answers">
+        <input
+          type="text"
+          id="add-response-1"
+          name="add-response-1"
+          placeholder="Answer 1"
+        />
+        <input
+          type="text"
+          id="add-response-2"
+          name="add-response-2"
+          placeholder="Answer 2"
+        />
+        <input
+          type="text"
+          id="add-response-3"
+          name="add-response-3"
+          placeholder="Answer 3"
+        />
       </div>
     </>
   );

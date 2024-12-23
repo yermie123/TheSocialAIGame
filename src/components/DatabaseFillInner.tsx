@@ -78,7 +78,8 @@ const DatabaseFillInner: Component = () => {
 
   const selectQuestion = (question: any) => {
     console.log("Selected question: ", question);
-    setQuestionSpotlight(question.question);
+    setQuestionSpotlight(question);
+    console.log("Question spotlight: ", questionSpotlight());
   };
 
   return (
