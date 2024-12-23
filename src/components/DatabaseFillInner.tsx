@@ -1,5 +1,9 @@
 import { For, createSignal, onMount, Show } from "solid-js";
-import { createNewQuestion, getAllQuestions } from "~/lib/database";
+import {
+  createNewQuestion,
+  getAllQuestions,
+  addToExistingQuestion,
+} from "~/lib/database";
 import type { Component } from "solid-js";
 import { Title } from "@solidjs/meta";
 import QuestionNew from "./QuestionNew";
@@ -16,6 +20,7 @@ const DatabaseFillInner: Component = () => {
     answer_type: "",
     answer_info: {},
   });
+  const [editType, editTypeSet] = createSignal("add_existing");
 
   onMount(() => {
     // Get all the questions and display them
@@ -72,7 +77,53 @@ const DatabaseFillInner: Component = () => {
         }, 2000);
       }
     } else if (!newQuestion()) {
-      alert("Not implemented to aid existing questions yet");
+      // if editing is just adding more responses
+      if (editType() === "add_existing") {
+        // Data validation
+        if (
+          !(document.getElementById("add-response-1") as HTMLInputElement)
+            .value ||
+          !(document.getElementById("add-response-2") as HTMLInputElement)
+            .value ||
+          !(document.getElementById("add-response-3") as HTMLInputElement).value
+        ) {
+          alert("Please fill in all inputs");
+          return;
+        }
+        let editAddQuestion = {
+          questionId: questionSpotlight().id,
+          question: questionSpotlight().question,
+          answerType: questionSpotlight().answer_type as
+            | "majority_vote"
+            | "top_vote_weighted"
+            | "top_vote",
+        };
+        let voterAnswers = {
+          voter: (document.getElementById("ai-models") as HTMLInputElement)
+            .value,
+          answers: {
+            a: (document.getElementById("add-response-1") as HTMLInputElement)
+              .value,
+            b: (document.getElementById("add-response-2") as HTMLInputElement)
+              .value,
+            c: (document.getElementById("add-response-3") as HTMLInputElement)
+              .value,
+          },
+        };
+        let result = await addToExistingQuestion(editAddQuestion, voterAnswers);
+
+        if (result) {
+          setQueryResult("success");
+          setTimeout(() => {
+            setQueryResult("unknown");
+          }, 2000);
+        } else {
+          setQueryResult("error");
+          setTimeout(() => {
+            setQueryResult("unknown");
+          }, 2000);
+        }
+      }
     }
   };
 

@@ -119,4 +119,87 @@ const getAllQuestions = async () => {
   }
 };
 
-export { createNewQuestion, getAllQuestions };
+interface EditAddQuestion {
+  question: string;
+  answerType: "majority_vote" | "top_vote_weighted" | "top_vote";
+  questionId: number;
+}
+
+const addToExistingQuestion = async (
+  question: EditAddQuestion,
+  voterAnswers: VoterAnswers
+) => {
+  try {
+    // Query to locate the question, then add new answers info and adjust the answers
+    const result = await pool.query({
+      text: `
+          SELECT answers, answer_info, answer_type
+          FROM game_questions
+          WHERE id = $1
+        `,
+      values: [question.questionId],
+    });
+
+    if (result.rows.length === 0) {
+      console.error("Question not found");
+      return "error";
+    }
+
+    const currentAnswers = JSON.parse(result.rows[0].answers); // Current Answers from DB
+    const currentAnswerInfo = JSON.parse(result.rows[0].answer_info); // Current Answer Info from DB
+
+    // Update answer info
+    if (question.answerType === "majority_vote") {
+      // If majority vote, store voterAnswers.voter as key
+      currentAnswerInfo[voterAnswers.voter] = [
+        voterAnswers.answers.a,
+        voterAnswers.answers.b,
+        voterAnswers.answers.c,
+      ];
+    } else {
+      currentAnswerInfo[voterAnswers.voter] = {
+        a: voterAnswers.answers.a,
+        b: voterAnswers.answers.b,
+        c: voterAnswers.answers.c,
+      };
+    }
+
+    // Update answers
+    currentAnswers.forEach((answer: any) => {
+      if (answer.answer === voterAnswers.answers.a) {
+        // If answer is a, add 1 extra vote
+        if (question.answerType === "majority_vote") answer.votes++;
+        answer.votes++;
+      } else if (answer.answer === voterAnswers.answers.b) {
+        answer.votes++;
+      } else if (answer.answer === voterAnswers.answers.c) {
+        answer.votes++;
+      }
+    });
+
+    const JSONAnswers = JSON.stringify(currentAnswers);
+    const JSONAnswerInfo = JSON.stringify(currentAnswerInfo);
+
+    // Update the question with new answers and answer info
+    const result2 = await pool.query({
+      text: `
+          UPDATE game_questions
+          SET answer_info = $1,
+              answers = $2
+          WHERE id = $3
+        `,
+      values: [JSONAnswerInfo, JSONAnswers, question.questionId],
+    });
+
+    if (result2 && result2.rowCount) {
+      return result2.rowCount > 0;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error(error);
+    return "error";
+  }
+};
+
+export { createNewQuestion, getAllQuestions, addToExistingQuestion };
