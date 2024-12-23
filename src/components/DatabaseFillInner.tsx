@@ -21,6 +21,11 @@ const DatabaseFillInner: Component = () => {
     answer_info: {},
   });
   const [editType, editTypeSet] = createSignal("add_existing");
+  const [editedAnswers, editedAnswersSet] = createSignal<any>({
+    a: "",
+    b: "",
+    c: "",
+  });
 
   onMount(() => {
     // Get all the questions and display them
@@ -81,11 +86,9 @@ const DatabaseFillInner: Component = () => {
       if (editType() === "add_existing") {
         // Data validation
         if (
-          !(document.getElementById("add-response-1") as HTMLInputElement)
-            .value ||
-          !(document.getElementById("add-response-2") as HTMLInputElement)
-            .value ||
-          !(document.getElementById("add-response-3") as HTMLInputElement).value
+          editedAnswers().a === "" ||
+          editedAnswers().b === "" ||
+          editedAnswers().c === ""
         ) {
           alert("Please fill in all inputs");
           return;
@@ -102,12 +105,9 @@ const DatabaseFillInner: Component = () => {
           voter: (document.getElementById("ai-models") as HTMLInputElement)
             .value,
           answers: {
-            a: (document.getElementById("add-response-1") as HTMLInputElement)
-              .value,
-            b: (document.getElementById("add-response-2") as HTMLInputElement)
-              .value,
-            c: (document.getElementById("add-response-3") as HTMLInputElement)
-              .value,
+            a: editedAnswers().a,
+            b: editedAnswers().b,
+            c: editedAnswers().c,
           },
         };
         let result = await addToExistingQuestion(editAddQuestion, voterAnswers);
@@ -145,6 +145,8 @@ const DatabaseFillInner: Component = () => {
           dbquestions={dbquestions}
           selectQuestion={selectQuestion}
           questionSpotlight={questionSpotlight}
+          editedAnswers={editedAnswers}
+          editedAnswersSet={editedAnswersSet}
         />
       </Show>
       <Show when={queryResult() === "success" || queryResult() === "error"}>

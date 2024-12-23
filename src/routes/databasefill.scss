@@ -26,6 +26,29 @@ main {
         background-color: aqua;
         cursor: pointer;
       }
+
+      .completed {
+        background-color: rgb(255, 198, 198);
+      }
+
+      .completed:hover {
+        background-color: rgb(209, 132, 132);
+      }
+    }
+  }
+
+  #add-answers {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .add-answers-containers {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
   }
 
@@ -35,6 +58,19 @@ main {
     option {
       max-width: 400px;
       padding: 0;
+    }
+  }
+}
+
+.modal {
+  article {
+    .content {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 5px;
     }
   }
 }

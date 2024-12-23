@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For, onMount } from "solid-js";
+import { createEffect, createSignal, For, onMount, Show, Ref } from "solid-js";
 import type { Component } from "solid-js";
 
 const QuestionEdit: Component<{
@@ -6,6 +6,8 @@ const QuestionEdit: Component<{
   dbquestions: () => any;
   selectQuestion: (value: any) => void;
   questionSpotlight: () => any;
+  editedAnswersSet: (value: any) => void;
+  editedAnswers: () => any;
 }> = (props) => {
   const [modelOptions, modelOptionsSet] = createSignal([
     "chatgpt",
@@ -22,6 +24,7 @@ const QuestionEdit: Component<{
   createEffect(() => {
     if (props.questionSpotlight().answer_type !== "") {
       handleModelLimitations();
+      addCurrentAnswers();
     }
   });
 
@@ -52,7 +55,14 @@ const QuestionEdit: Component<{
         <div id="question-list">
           <For each={props.dbquestions()}>
             {(question: any) => (
-              <p onClick={() => props.selectQuestion(question)}>
+              <p
+                onClick={() => props.selectQuestion(question)}
+                class={
+                  Object.keys(question.answer_info).length === 8
+                    ? "completed"
+                    : "uncompleted"
+                }
+              >
                 Question: {question.question}
               </p>
             )}
@@ -72,26 +82,128 @@ const QuestionEdit: Component<{
         <h4>{props.questionSpotlight().question}</h4>
       </div>
       <div id="add-answers">
-        <input
-          type="text"
-          id="add-response-1"
-          name="add-response-1"
-          placeholder="Answer 1"
-        />
-        <input
-          type="text"
-          id="add-response-2"
-          name="add-response-2"
-          placeholder="Answer 2"
-        />
-        <input
-          type="text"
-          id="add-response-3"
-          name="add-response-3"
-          placeholder="Answer 3"
-        />
+        <Show
+          when={props.editedAnswers().a !== ""}
+          fallback={
+            <label for="modal_a" class="button success">
+              Add Answer A
+            </label>
+          }
+        >
+          <div class="add-answers-containers">
+            <p>{props.editedAnswers().a}</p>
+            <button>Edit</button>
+          </div>
+        </Show>
+        <Show
+          when={props.editedAnswers().b !== ""}
+          fallback={
+            <label for="modal_b" class="button success">
+              Add Answer B
+            </label>
+          }
+        >
+          <div class="add-answers-containers">
+            <p>{props.editedAnswers().b}</p>
+            <button>Edit</button>
+          </div>
+        </Show>
+        <Show
+          when={props.editedAnswers().c !== ""}
+          fallback={
+            <label for="modal_c" class="button success">
+              Add Answer C
+            </label>
+          }
+        >
+          <div class="add-answers-containers">
+            <p>{props.editedAnswers().c}</p>
+            <button>Edit</button>
+          </div>
+        </Show>
       </div>
+
+      <QEModal
+        setID="modal_a"
+        editedAnswersSet={props.editedAnswersSet}
+        currentAnswers={currentAnswers}
+      />
+      <QEModal
+        setID="modal_b"
+        editedAnswersSet={props.editedAnswersSet}
+        currentAnswers={currentAnswers}
+      />
+      <QEModal
+        setID="modal_c"
+        editedAnswersSet={props.editedAnswersSet}
+        currentAnswers={currentAnswers}
+      />
     </>
+  );
+};
+
+const QEModal: Component<{
+  setID: string;
+  editedAnswersSet: (value: any) => void;
+  currentAnswers: () => any;
+}> = (props) => {
+  const theUltimateEditor = (inputVal: string) => {
+    if (props.setID === "modal_a") {
+      props.editedAnswersSet((prev: any) => ({
+        ...prev,
+        a: inputVal,
+      }));
+    } else if (props.setID === "modal_b") {
+      props.editedAnswersSet((prev: any) => ({
+        ...prev,
+        b: inputVal,
+      }));
+    } else if (props.setID === "modal_c") {
+      props.editedAnswersSet((prev: any) => ({
+        ...prev,
+        c: inputVal,
+      }));
+    }
+  };
+
+  let answerRef: any;
+
+  return (
+    <div class="modal">
+      <input id={props.setID} type="checkbox" />
+      <label for={props.setID} class="overlay"></label>
+      <article>
+        <header>
+          <h3>Modal {props.setID}</h3>
+          <label for={props.setID} class="close">
+            &times;
+          </label>
+        </header>
+        <section class="content">
+          <For each={props.currentAnswers()}>
+            {(answer: any) => (
+              <button onClick={() => (answerRef.value = answer.answer)}>
+                {answer.answer}
+              </button>
+            )}
+          </For>
+        </section>
+        <input
+          ref={answerRef}
+          type="text"
+          placeholder="Select Above or New Answer Here"
+        />
+        <footer>
+          <label
+            for={props.setID}
+            class="button success"
+            onClick={() => theUltimateEditor(answerRef.value)}
+          >
+            Confirm
+          </label>
+        </footer>
+      </article>
+    </div>
   );
 };
 

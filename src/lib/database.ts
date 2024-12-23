@@ -145,8 +145,10 @@ const addToExistingQuestion = async (
       return "error";
     }
 
-    const currentAnswers = JSON.parse(result.rows[0].answers); // Current Answers from DB
-    const currentAnswerInfo = JSON.parse(result.rows[0].answer_info); // Current Answer Info from DB
+    console.log(result.rows[0]);
+
+    const currentAnswers = result.rows[0].answers; // Current Answers from DB
+    const currentAnswerInfo = result.rows[0].answer_info; // Current Answer Info from DB
 
     // Update answer info
     if (question.answerType === "majority_vote") {
@@ -164,18 +166,48 @@ const addToExistingQuestion = async (
       };
     }
 
-    // Update answers
-    currentAnswers.forEach((answer: any) => {
-      if (answer.answer === voterAnswers.answers.a) {
-        // If answer is a, add 1 extra vote
-        if (question.answerType === "majority_vote") answer.votes++;
-        answer.votes++;
-      } else if (answer.answer === voterAnswers.answers.b) {
-        answer.votes++;
-      } else if (answer.answer === voterAnswers.answers.c) {
-        answer.votes++;
-      }
-    });
+    // Update answer 1
+    let findRes1 = currentAnswers.find(
+      (a: any) => a.answer === voterAnswers.answers.a
+    );
+    if (typeof findRes1 === "undefined") {
+      currentAnswers.push({
+        answer: voterAnswers.answers.a,
+        votes: 1,
+      });
+    } else {
+      // If answer already exists, add 1 extra vote
+      findRes1.votes++;
+      if (question.answerType === "top_vote_weighted") findRes1.votes++;
+    }
+
+    // Update answer 2
+    let findRes2 = currentAnswers.find(
+      (a: any) => a.answer === voterAnswers.answers.b
+    );
+    if (typeof findRes2 === "undefined") {
+      currentAnswers.push({
+        answer: voterAnswers.answers.b,
+        votes: 1,
+      });
+    } else {
+      // If answer already exists, add 1 extra vote
+      findRes2.votes++;
+    }
+
+    // Update answer 3
+    let findRes3 = currentAnswers.find(
+      (a: any) => a.answer === voterAnswers.answers.c
+    );
+    if (typeof findRes3 === "undefined") {
+      currentAnswers.push({
+        answer: voterAnswers.answers.c,
+        votes: 1,
+      });
+    } else {
+      // If answer already exists, add 1 extra vote
+      findRes3.votes++;
+    }
 
     const JSONAnswers = JSON.stringify(currentAnswers);
     const JSONAnswerInfo = JSON.stringify(currentAnswerInfo);
