@@ -1,0 +1,36 @@
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  height: 100vh;
+
+  #mini-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+
+    p {
+      margin: 0;
+
+      span {
+        margin: 0;
+      }
+    }
+
+    p:hover {
+      cursor: pointer;
+    }
+  }
+
+  h1 {
+    margin: 0;
+  }
+
+  p {
+    max-width: 800px;
+  }
+}
