@@ -3,6 +3,25 @@ import type { Component } from "solid-js";
 import GamePrep from "~/components/game/GamePrep";
 import { updateLSBasic } from "~/lib/localstorage";
 
+interface GameState {
+  state: string;
+  currentQuestion: {
+    question: string;
+    id: string;
+    answerType: string;
+    answers: string[];
+    answerInfo: {
+      [key: string]: any;
+    };
+  };
+  team1Players: {
+    [key: string]: string;
+  };
+  team2Players: {
+    [key: string]: string;
+  };
+}
+
 const GameControl: Component = () => {
   // This is the shared state in the game
   const [gameState, gameStateSet] = createSignal({
