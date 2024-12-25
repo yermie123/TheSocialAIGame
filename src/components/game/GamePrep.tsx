@@ -19,6 +19,19 @@ const GamePrep: Component<{
     for (let i = 0; i < team2.length; i++) {
       team2Values[(team1[i] as HTMLInputElement).value] = 0;
     }
+
+    props.gameStateSet({
+      ...props.gameState(),
+      team1Players: team1Values,
+      team2Players: team2Values,
+    });
+
+    props.gameStateSet({
+      ...props.gameState(),
+      state: "playing",
+    });
+
+    console.log(props.gameState());
   };
 
   return (

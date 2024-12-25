@@ -234,4 +234,21 @@ const addToExistingQuestion = async (
   }
 };
 
-export { createNewQuestion, getAllQuestions, addToExistingQuestion };
+const getRandomQuestion = async () => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM game_questions ORDER BY RANDOM() LIMIT 1"
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error(error);
+    return "error";
+  }
+};
+
+export {
+  createNewQuestion,
+  getAllQuestions,
+  addToExistingQuestion,
+  getRandomQuestion,
+};

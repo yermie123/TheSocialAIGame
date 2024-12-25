@@ -1,6 +1,7 @@
-import { createSignal, onMount, Show } from "solid-js";
+import { createSignal, onMount, Show, Switch, Match } from "solid-js";
 import type { Component } from "solid-js";
 import GamePrep from "~/components/game/GamePrep";
+import GamePlay from "~/components/game/GamePlay";
 import { updateLSBasic } from "~/lib/localstorage";
 
 interface GameState {
@@ -25,7 +26,7 @@ interface GameState {
 const GameControl: Component = () => {
   // This is the shared state in the game
   const [gameState, gameStateSet] = createSignal({
-    state: "prepping",
+    state: "playing",
     currentQuestion: null,
   });
   const [mountCheck, mountCheckSet] = createSignal(false);
@@ -43,7 +44,14 @@ const GameControl: Component = () => {
   return (
     <div id="game-control">
       <Show when={mountCheck()} fallback={<h1>Loading...</h1>}>
-        <GamePrep gameState={gameState} gameStateSet={gameStateSet} />
+        <Switch>
+          <Match when={gameState().state === "prepping"}>
+            <GamePrep gameState={gameState} gameStateSet={gameStateSet} />
+          </Match>
+          <Match when={gameState().state === "playing"}>
+            <GamePlay />
+          </Match>
+        </Switch>
       </Show>
     </div>
   );

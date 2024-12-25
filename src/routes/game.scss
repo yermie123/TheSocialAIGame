@@ -1,3 +1,9 @@
+$primary: #ffefd6;
+$secondary: #a7cadc;
+$tertiary: #fda05e;
+$quaternary: #051438;
+$quinary: #171d26;
+
 main {
   display: flex;
   flex-direction: column;
@@ -58,6 +64,63 @@ main {
           gap: 1em;
         }
       }
+    }
+
+    #game-play {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1em;
+
+      #answers {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 10em;
+
+        #gen-answers,
+        #one-pointers {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5em;
+
+          .answer {
+            border: 1px solid $quaternary;
+            border-radius: 5px;
+            min-width: 300px;
+            padding: 0.5em;
+
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+
+            p {
+              visibility: hidden;
+            }
+          }
+
+          .answer-show {
+            border: 1px solid $quaternary;
+            border-radius: 5px;
+            min-width: 300px;
+            padding: 0.5em;
+
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+          }
+        }
+      }
+    }
+
+    #answer-input {
+      visibility: hidden;
     }
   }
 }
