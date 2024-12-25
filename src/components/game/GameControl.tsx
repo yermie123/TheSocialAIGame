@@ -15,10 +15,10 @@ interface GameState {
     };
   };
   team1Players: {
-    [key: string]: string;
+    [key: string]: number;
   };
   team2Players: {
-    [key: string]: string;
+    [key: string]: number;
   };
 }
 
