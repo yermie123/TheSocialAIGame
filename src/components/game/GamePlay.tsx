@@ -87,8 +87,8 @@ const GamePlay: Component = () => {
                 class={answer.visible ? "answer-show" : "answer"}
                 id={answer.answer}
               >
-                <p>{answer.answer}</p>
-                <p>{answer.votes}</p>
+                <h3>{answer.answer}</h3>
+                <h3>{answer.votes}</h3>
               </div>
             )}
           </For>
@@ -101,8 +101,8 @@ const GamePlay: Component = () => {
                 class={answer.visible ? "answer-show" : "answer"}
                 id={answer.answer}
               >
-                <p>{answer.answer}</p>
-                <p>{answer.votes}</p>
+                <h3>{answer.answer}</h3>
+                <h3>{answer.votes}</h3>
               </div>
             )}
           </For>
