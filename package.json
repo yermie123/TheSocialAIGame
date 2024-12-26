@@ -15,12 +15,14 @@
     "animejs": "^3.2.2",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "node-cache": "^5.1.2",
     "pg": "^8.13.1",
     "picnic": "^7.1.0",
     "pocketbase": "^0.24.0",
     "sass": "^1.83.0",
     "solid-js": "^1.9.2",
-    "vinxi": "^0.4.3"
+    "vinxi": "^0.4.3",
+    "ws": "^8.18.0"
   },
   "overrides": {
     "vite": "5.4.10"

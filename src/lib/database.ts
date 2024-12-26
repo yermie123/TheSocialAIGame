@@ -235,6 +235,7 @@ const addToExistingQuestion = async (
 };
 
 const getRandomQuestion = async () => {
+  console.log("Getting random question");
   try {
     const result = await pool.query(
       "SELECT * FROM game_questions ORDER BY RANDOM() LIMIT 1"
