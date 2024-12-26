@@ -62,11 +62,11 @@ const GameAdmin: Component = () => {
     }, 30000); // Sync every 30 seconds
   });
 
-  const revealCard = (cardId: string) => {
+  const revealCard = (cardName: string) => {
     socket()?.send(
       JSON.stringify({
         type: "REVEAL_CARD",
-        payload: { cardId },
+        payload: { cardName },
       })
     );
   };
@@ -91,7 +91,7 @@ const GameAdmin: Component = () => {
           <h3>Proper List</h3>
           <For each={properListGen}>
             {(answer) => (
-              <button>
+              <button onClick={() => revealCard(answer.answer)}>
                 {answer.answer}: {answer.votes}
               </button>
             )}
@@ -109,7 +109,7 @@ const GameAdmin: Component = () => {
           <h3>One Pointers</h3>
           <For each={onePointers}>
             {(answer) => (
-              <button>
+              <button onClick={() => revealCard(answer.answer)}>
                 {answer.answer}: {answer.votes}
               </button>
             )}

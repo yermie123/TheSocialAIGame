@@ -57,13 +57,14 @@ const GamePlay: Component = () => {
 
         case "REVEAL_CARD":
           // Update single card visibility
+          console.log("Request to reveal card: ", data.payload.cardName);
           properListGenSet(
-            (card) => card.id === data.payload.cardId,
+            (card) => card.answer === data.payload.cardName,
             "visible",
             true
           );
           onePointersSet(
-            (card) => card.id === data.payload.cardId,
+            (card) => card.answer === data.payload.cardName,
             "visible",
             true
           );
@@ -87,8 +88,8 @@ const GamePlay: Component = () => {
                 class={answer.visible ? "answer-show" : "answer"}
                 id={answer.answer}
               >
-                <h3>{answer.answer}</h3>
-                <h3>{answer.votes}</h3>
+                <h2>{answer.answer}</h2>
+                <h2>{answer.votes}</h2>
               </div>
             )}
           </For>
@@ -101,8 +102,8 @@ const GamePlay: Component = () => {
                 class={answer.visible ? "answer-show" : "answer"}
                 id={answer.answer}
               >
-                <h3>{answer.answer}</h3>
-                <h3>{answer.votes}</h3>
+                <h2>{answer.answer}</h2>
+                <h2>{answer.votes}</h2>
               </div>
             )}
           </For>

@@ -91,7 +91,7 @@ main {
           .answer {
             border: 1px solid $quaternary;
             border-radius: 5px;
-            min-width: 300px;
+            min-width: 500px;
             padding: 0.5em;
 
             display: flex;
@@ -99,7 +99,9 @@ main {
             align-items: center;
             justify-content: space-between;
 
-            p, h3 {
+            p,
+            h3,
+            h2 {
               visibility: hidden;
             }
           }
@@ -107,7 +109,7 @@ main {
           .answer-show {
             border: 1px solid $quaternary;
             border-radius: 5px;
-            min-width: 300px;
+            min-width: 500px;
             padding: 0.5em;
 
             display: flex;

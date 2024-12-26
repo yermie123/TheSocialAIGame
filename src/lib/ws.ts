@@ -140,7 +140,7 @@ export default eventHandler({
                 presenterPeer.send(
                   JSON.stringify({
                     type: "REVEAL_CARD",
-                    payload: { cardId: data.payload.cardId },
+                    payload: { cardName: data.payload.cardName },
                   })
                 );
               }
