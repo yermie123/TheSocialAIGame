@@ -1,38 +1,17 @@
-import { For, createSignal, onMount } from "solid-js";
+import { For, createSignal, onMount, Show, createEffect } from "solid-js";
 import type { Component } from "solid-js";
 
 const GamePrep: Component<{
   gameState: () => any;
   gameStateSet: (value: any) => void;
 }> = (props) => {
-  const processSelection = () => {
-    // Check the inputs for team names and players
-    let team1Values: { [key: string]: number } = {};
-    let team2Values: { [key: string]: number } = {};
-    let team1 = document.getElementsByClassName("player-1");
-    let team2 = document.getElementsByClassName("player-2");
+  const [team1Values, team1ValuesSet] = createSignal<any>([]);
+  const [team2Values, team2ValuesSet] = createSignal<any>([]);
 
-    for (let i = 0; i < team1.length; i++) {
-      team1Values[(team1[i] as HTMLInputElement).value] = 0;
-    }
-
-    for (let i = 0; i < team2.length; i++) {
-      team2Values[(team1[i] as HTMLInputElement).value] = 0;
-    }
-
-    props.gameStateSet({
-      ...props.gameState(),
-      team1Players: team1Values,
-      team2Players: team2Values,
-    });
-
-    props.gameStateSet({
-      ...props.gameState(),
-      state: "playing",
-    });
-
-    console.log(props.gameState());
-  };
+  createEffect(() => {
+    console.log("team1: ", team1Values());
+    console.log("team2: ", team2Values());
+  });
 
   return (
     <div id="game-prep">
@@ -41,14 +20,14 @@ const GamePrep: Component<{
       <div id="teams">
         <div id="team1">
           <h2>Team 1</h2>
-          <PlayerInput team={1} />
+          <PlayerInput team={1} tVSet={team1ValuesSet} tV={team1Values} />
         </div>
         <div id="team2">
           <h2>Team 2</h2>
-          <PlayerInput team={2} />
+          <PlayerInput team={2} tVSet={team2ValuesSet} tV={team2Values} />
         </div>
       </div>
-      <button class="success" onClick={() => processSelection()}>
+      <button class="success" onClick={() => alert("TODO: Finalize")}>
         Finalize Selection
       </button>
     </div>
@@ -57,21 +36,49 @@ const GamePrep: Component<{
 
 const PlayerInput: Component<{
   team: number;
+  tV: () => any;
+  tVSet: (value: any) => void;
 }> = (props) => {
-  const [tP, tPSet] = createSignal<any>([]);
+  const reloadRemove = (index: string) => {
+    let tempArr = [...props.tV()];
+    tempArr.splice(parseInt(index, 10), 1);
+    props.tVSet(tempArr);
+    console.log("Removed: ", tempArr);
+  };
 
   return (
     <>
-      <For each={tP()}>
+      <For each={props.tV()}>
         {(player: any, index: any) => (
-          <input
-            type="text"
-            class={`player-${props.team}`}
-            placeholder={`Player ${index() + 1}`}
-          />
+          <div class="player-input">
+            <Show
+              when={props.team === 2}
+              fallback={
+                <img src={"/trash.svg"} onClick={() => reloadRemove(index())} />
+              }
+            >
+              <img src={"/arrow-icons/arrow-left.svg"} />
+            </Show>
+            <input
+              type="text"
+              class={`player-${props.team}`}
+              placeholder={`Player ${index() + 1}`}
+              onInput={(e) => e.target.value}
+            />
+            <Show
+              when={props.team === 1}
+              fallback={
+                <img src={"/trash.svg"} onClick={() => reloadRemove(index())} />
+              }
+            >
+              <img src={"/arrow-icons/arrow-right.svg"} />
+            </Show>
+          </div>
         )}
       </For>
-      <button onClick={() => tPSet([...tP(), ""])}>Add Another Player</button>
+      <button onClick={() => props.tVSet((prev: any) => [...prev, ""])}>
+        Add Another Player
+      </button>
     </>
   );
 };

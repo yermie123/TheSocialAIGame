@@ -26,7 +26,7 @@ interface GameState {
 const GameControl: Component = () => {
   // This is the shared state in the game
   const [gameState, gameStateSet] = createSignal({
-    state: "playing",
+    state: "prepping",
     currentQuestion: null,
   });
   const [mountCheck, mountCheckSet] = createSignal(false);
