@@ -74,6 +74,12 @@ const GamePrep: Component<{
       >
         Finalize Selection
       </button>
+      <div id="admin">
+        <h3>
+          Game Host URL: {import.meta.env.VITE_COMMON_URL_SIMPLIFIED}/gameadmin
+        </h3>
+        <h3>Code: TODO</h3>
+      </div>
     </div>
   );
 };
