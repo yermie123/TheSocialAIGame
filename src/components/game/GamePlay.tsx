@@ -2,7 +2,7 @@ import { createSignal, onMount, For } from "solid-js";
 import { createStore } from "solid-js/store";
 import type { Component } from "solid-js";
 
-const GamePlay: Component = () => {
+const GamePlay: Component<{ gameState: any }> = (props) => {
   const [question, questionSet] = createSignal({
     question: "Loading...",
     id: "",
@@ -16,6 +16,7 @@ const GamePlay: Component = () => {
 
   onMount(async () => {
     console.log("Mounted game play");
+    console.log("The following is game state: ", props.gameState());
 
     const ws = new WebSocket("ws://localhost:3000/ws");
 

@@ -14,6 +14,35 @@ const GamePrep: Component<{
     console.log("team2: ", team2Values);
   });
 
+  const handleFinalize = () => {
+    // Focus on button
+    const finalizeButton = document.querySelector(
+      "#finalize-button"
+    ) as HTMLButtonElement;
+    finalizeButton.focus();
+
+    // Filter out empty values from each team and set them to 0
+    const team1: any = {};
+    team1Values.forEach((e: any) => {
+      if (e !== "") {
+        team1[e] = 0;
+      }
+    });
+    const team2: any = {};
+    team2Values.forEach((e: any) => {
+      if (e !== "") {
+        team2[e] = 0;
+      }
+    });
+
+    props.gameStateSet((prev: any) => ({
+      ...prev,
+      state: "playing",
+      team1Players: team1,
+      team2Players: team2,
+    }));
+  };
+
   return (
     <div id="game-prep">
       <h1>Game Prep</h1>
@@ -38,7 +67,11 @@ const GamePrep: Component<{
           />
         </div>
       </div>
-      <button class="success" onClick={() => alert("TODO: Finalize")}>
+      <button
+        id="finalize-button"
+        class="success"
+        onClick={() => handleFinalize()}
+      >
         Finalize Selection
       </button>
     </div>
@@ -52,23 +85,19 @@ const PlayerInput: Component<{
   otherTeamSet: any;
 }> = (props) => {
   const combineWithSignal = (value: string, index: number) => {
-    console.log("Value: ", value);
-    props.tVSet([index], value);
-    console.log("Signal: ", props.tV);
+    props.tVSet(index, value);
   };
 
   const reloadRemove = (index: string) => {
-    let tempArr = [...props.tV];
-    tempArr.splice(parseInt(index, 10), 1);
-    props.tVSet(tempArr);
-    console.log("Removed: ", tempArr);
+    const idx = parseInt(index, 10);
+    props.tVSet((prev: string[]) => prev.filter((_, i) => i !== idx));
   };
 
   const playerToOtherTeam = (index: string) => {
-    let tempArr = [...props.tV];
-    let tempPlayer = tempArr.splice(parseInt(index, 10), 1);
-    props.otherTeamSet((prev: any) => [...prev, tempPlayer]);
-    props.tVSet(tempArr);
+    const idx = parseInt(index, 10);
+    const player = props.tV[idx];
+    props.otherTeamSet((prev: string[]) => [...prev, player]);
+    props.tVSet((prev: string[]) => prev.filter((_, i) => i !== idx));
   };
 
   return (
@@ -91,8 +120,10 @@ const PlayerInput: Component<{
               type="text"
               class={`player-${props.team}`}
               placeholder={`Player ${index() + 1}`}
-              onInput={(e) => combineWithSignal(e.currentTarget.value, index())}
-              innerText={player !== "" ? player : ""}
+              onChange={(e) =>
+                combineWithSignal(e.currentTarget.value, index())
+              }
+              value={player}
             />
             <Show
               when={props.team === 1}
@@ -114,4 +145,5 @@ const PlayerInput: Component<{
     </>
   );
 };
+
 export default GamePrep;
