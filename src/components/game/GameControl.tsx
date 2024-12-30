@@ -14,20 +14,22 @@ interface GameState {
     answerInfo: {
       [key: string]: any;
     };
-  };
+  } | null;
   team1Players: {
     [key: string]: number;
-  };
+  } | null;
   team2Players: {
     [key: string]: number;
-  };
+  } | null;
 }
 
 const GameControl: Component = () => {
   // This is the shared state in the game
-  const [gameState, gameStateSet] = createSignal({
-    state: "playing",
+  const [gameState, gameStateSet] = createSignal<GameState>({
+    state: "prepping",
     currentQuestion: null,
+    team1Players: null,
+    team2Players: null,
   });
   const [mountCheck, mountCheckSet] = createSignal(false);
 
@@ -49,7 +51,7 @@ const GameControl: Component = () => {
             <GamePrep gameState={gameState} gameStateSet={gameStateSet} />
           </Match>
           <Match when={gameState().state === "playing"}>
-            <GamePlay />
+            <GamePlay gameState={gameState} />
           </Match>
         </Switch>
       </Show>
