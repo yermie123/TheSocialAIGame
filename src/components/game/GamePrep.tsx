@@ -8,15 +8,17 @@ const GamePrep: Component<{
 }> = (props) => {
   const [team1Values, team1ValuesSet] = createStore<any>([]);
   const [team2Values, team2ValuesSet] = createStore<any>([]);
-  const [teamNames, teamNamesSet] = createStore<any>({
-    team1: "Team 1",
-    team2: "Team 2",
+  const [teamDetails, teamDetailsSet] = createStore<any>({
+    team1Name: "Team 1",
+    team2Name: "Team 2",
+    team1Color: "default1",
+    team2Color: "default2",
   });
 
   createEffect(() => {
     console.log("team1: ", team1Values);
     console.log("team2: ", team2Values);
-    console.log("team names: ", teamNames);
+    console.log("team names: ", teamDetails);
   });
 
   const handleFinalize = () => {
@@ -40,17 +42,23 @@ const GamePrep: Component<{
       }
     });
 
+    // Last error check for empty values
+    if (Object.keys(team1).length === 0 || Object.keys(team2).length === 0) {
+      alert("Please add at least one player to each team");
+      return;
+    }
+
     props.gameStateSet((prev: any) => ({
       ...prev,
       state: "playing",
       team1: {
-        name: teamNames.team1,
-        color: "default1",
+        name: teamDetails.team1Name,
+        color: teamDetails.team1Color,
         players: team1,
       },
       team2: {
-        name: teamNames.team2,
-        color: "default2",
+        name: teamDetails.team2Name,
+        color: teamDetails.team2Color,
         players: team2,
       },
     }));
@@ -66,20 +74,26 @@ const GamePrep: Component<{
           <h2
             contentEditable={true}
             onInput={(e: any) =>
-              teamNamesSet((prev: any) => ({
+              teamDetailsSet((prev: any) => ({
                 ...prev,
-                team1: e.target.innerText,
+                team1Name: e.target.innerText,
               }))
             }
           >
             Team 1
           </h2>
-          <label for="team1Color">{teamNames.team1} Color:</label>
+          <label for="team1Color">{teamDetails.team1Name} Color:</label>
           <input
             type="color"
             id="team1Color"
             name="team1Color"
             value="#C3EB78"
+            onChange={(e: any) =>
+              teamDetailsSet((prev: any) => ({
+                ...prev,
+                team1Color: e.target.value,
+              }))
+            }
           />
           <PlayerInput
             team={1}
@@ -92,7 +106,7 @@ const GamePrep: Component<{
           <h2
             contentEditable={true}
             onInput={(e: any) =>
-              teamNamesSet((prev: any) => ({
+              teamDetailsSet((prev: any) => ({
                 ...prev,
                 team2: e.target.innerText,
               }))
@@ -100,12 +114,18 @@ const GamePrep: Component<{
           >
             Team 2
           </h2>
-          <label for="team2Color">{teamNames.team2} Color:</label>
+          <label for="team2Color">{teamDetails.team2Name} Color:</label>
           <input
             type="color"
             id="team2Color"
             name="team2Color"
             value="#AB92BF"
+            onChange={(e: any) =>
+              teamDetailsSet((prev: any) => ({
+                ...prev,
+                team2Color: e.target.value,
+              }))
+            }
           />
           <PlayerInput
             team={2}
