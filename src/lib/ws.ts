@@ -52,32 +52,69 @@ export default eventHandler({
             const { role } = data.payload;
             if (role === "presenter") {
               console.log("Registered presenter:", peer.id);
+
+              // After registration, generate a game instance in postgres, and take the code
+              const code: string | void = await gameEventInitialization();
+              await peer.send(
+                JSON.stringify({
+                  type: "RECEIVE_CONNECTION_CODE",
+                  payload: await code,
+                })
+              );
+
+              // Cache the connection code with the presenter peer id
+              let cacheEntry: CacheEntry = {
+                MAX_RETRY_ATTEMPTS: 5,
+                peers: {
+                  presenter: peer.id,
+                },
+              };
+              let cacheData = await cache.set(code as string, cacheEntry);
             } else if (role === "viewer") {
               console.log("Accepting viewer: ", peer.id);
               // Check for existing presenter
               if (data.payload.code !== null && data.payload.code !== "") {
-                const cacheDataOG = await cache.get(data.payload.code);
-                const cacheEntryViewer = await cache.set(data.payload.code, peers: { ...cacheDataOG.peers, viewer: peer.id });
+                // Check if presenter of same code exists
+                const cacheDataOG = cache.get(data.payload.code);
+                if (!cacheDataOG) {
+                  console.log("Cache with provided code does not exist");
+                  await peer.send(
+                    JSON.stringify({
+                      type: "RECEIVE_CONNECTION_CODE",
+                      payload: 403,
+                    })
+                  );
+                  return;
+                }
+
+                let newData = {
+                  ...cacheDataOG,
+                  peers: { ...cacheDataOG.peers, viewer: peer.id },
+                };
+                cache.set(data.payload.code, newData);
+                console.log("New Data: ", cache.get(data.payload.code));
+                let currQuest = "";
+                if (cacheDataOG.currentQuestion)
+                  currQuest = cacheDataOG.currentQuestion; // If cache has a current question, send it
+                // Send back the code
+                await peer.send(
+                  JSON.stringify({
+                    type: "RECEIVE_CONNECTION_CODE",
+                    payload: {
+                      code: data.payload.code,
+                      currentQuestion: currQuest,
+                    },
+                  })
+                );
+              } else {
+                await peer.send(
+                  JSON.stringify({
+                    type: "RECEIVE_CONNECTION_CODE",
+                    payload: 403,
+                  })
+                );
               }
             }
-
-            // After registration, generate a game instance in postgres, and take the code
-            const code: string | void = await gameEventInitialization();
-            await peer.send(
-              JSON.stringify({
-                type: "RECEIVE_CONNECTION_CODE",
-                payload: await code,
-              })
-            );
-
-            // Cache the connection code with the presenter peer id
-            let cacheEntry: CacheEntry = {
-              MAX_RETRY_ATTEMPTS: 5,
-              peers: {
-                presenter: peer.id,
-              },
-            };
-            let cacheData = await cache.set(code as string, cacheEntry);
             break;
           }
 
