@@ -3,12 +3,15 @@
 import { eventHandler } from "vinxi/http";
 import { getRandomQuestion } from "~/lib/websocketHandlers/questions";
 import { gameEventInitialization } from "./dbHandlers/gameInitialization";
+import type { CacheEntry } from "./cache";
+import cache from "./cache";
 
 import {
   connections,
   presenters,
   viewers,
   usedQuestions,
+  MAX_RETRY_ATTEMPTS,
 } from "./websocketHandlers/connection";
 import { getCurrentQuestion } from "./cache";
 
@@ -48,11 +51,14 @@ export default eventHandler({
           case "REGISTER_ROLE": {
             const { role } = data.payload;
             if (role === "presenter") {
-              presenters.add(peer.id);
               console.log("Registered presenter:", peer.id);
             } else if (role === "viewer") {
-              viewers.add(peer.id);
-              console.log("Registered viewer:", peer.id);
+              console.log("Accepting viewer: ", peer.id);
+              // Check for existing presenter
+              if (data.payload.code !== null && data.payload.code !== "") {
+                const cacheDataOG = await cache.get(data.payload.code);
+                const cacheEntryViewer = await cache.set(data.payload.code, peers: { ...cacheDataOG.peers, viewer: peer.id });
+              }
             }
 
             // After registration, generate a game instance in postgres, and take the code
@@ -63,6 +69,15 @@ export default eventHandler({
                 payload: await code,
               })
             );
+
+            // Cache the connection code with the presenter peer id
+            let cacheEntry: CacheEntry = {
+              MAX_RETRY_ATTEMPTS: 5,
+              peers: {
+                presenter: peer.id,
+              },
+            };
+            let cacheData = await cache.set(code as string, cacheEntry);
             break;
           }
 

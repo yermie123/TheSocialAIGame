@@ -5,10 +5,13 @@ import NodeCache from "@cacheable/node-cache";
 const cache = new NodeCache();
 
 interface CacheEntry {
-  currentQuestion: string;
-  lastFetchTime: number;
-  usedQuestions: Set<string>;
+  currentQuestion?: string;
+  usedQuestions?: Set<string>;
   MAX_RETRY_ATTEMPTS: number;
+  peers: {
+    presenter: string;
+    viewer?: string;
+  };
 }
 
 const getCurrentQuestion = (code: string): string => {
