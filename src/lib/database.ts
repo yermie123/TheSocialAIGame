@@ -145,7 +145,7 @@ const addToExistingQuestion = async (
       return "error";
     }
 
-    console.log(result.rows[0]);
+    console.log("Result: ", result.rows[0]);
 
     const currentAnswers = result.rows[0].answers; // Current Answers from DB
     const currentAnswerInfo = result.rows[0].answer_info; // Current Answer Info from DB
@@ -234,22 +234,4 @@ const addToExistingQuestion = async (
   }
 };
 
-const getRandomQuestion = async () => {
-  console.log("Getting random question");
-  try {
-    const result = await pool.query(
-      "SELECT * FROM game_questions ORDER BY RANDOM() LIMIT 1"
-    );
-    return result.rows[0];
-  } catch (error) {
-    console.error(error);
-    return "error";
-  }
-};
-
-export {
-  createNewQuestion,
-  getAllQuestions,
-  addToExistingQuestion,
-  getRandomQuestion,
-};
+export { createNewQuestion, getAllQuestions, addToExistingQuestion, pool };

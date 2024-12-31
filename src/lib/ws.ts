@@ -1,82 +1,27 @@
+"use server";
+
 import { eventHandler } from "vinxi/http";
-import { getRandomQuestion } from "./database";
+import { getRandomQuestion } from "~/lib/websocketHandlers/questions";
 
-const connections = new Map<string, any>();
-const presenters = new Set<string>();
-const viewers = new Set<string>();
-
-let currentQuestion: any = null;
-let lastFetchTime = 0;
-const CACHE_DURATION = 1000 * 60 * 5;
-
-const usedQuestions = new Set<string>(); // Store used question IDs
-const MAX_RETRY_ATTEMPTS = 5; // Prevent infinite loops
-
-async function getUniqueRandomQuestion(): Promise<any> {
-  let attempts = 0;
-  let question = null;
-
-  console.log("Attempts: ", attempts);
-
-  while (attempts < MAX_RETRY_ATTEMPTS) {
-    question = await getRandomQuestion();
-
-    // If we haven't used this question before, use it
-    if (question && !usedQuestions.has(question.id)) {
-      usedQuestions.add(question.id);
-      return question;
-    }
-
-    attempts++;
-  }
-
-  // If we've used all questions or hit max retries, clear cache and try once more
-  if (attempts >= MAX_RETRY_ATTEMPTS) {
-    console.log("Clearing question cache and trying again");
-    usedQuestions.clear();
-    question = await getRandomQuestion();
-    if (question) {
-      usedQuestions.add(question.id);
-    }
-  }
-
-  return question;
-}
-
-async function getCurrentQuestion(forceRefresh = false) {
-  const now = Date.now();
-
-  // If we have a cached question and it's not expired and we're not forcing refresh
-  if (
-    currentQuestion &&
-    !forceRefresh &&
-    now - lastFetchTime < CACHE_DURATION
-  ) {
-    return currentQuestion;
-  }
-
-  // Get new question
-  try {
-    currentQuestion = await getUniqueRandomQuestion();
-    lastFetchTime = now;
-    return currentQuestion;
-  } catch (error) {
-    console.error("Error fetching question:", error);
-    return null;
-  }
-}
+import {
+  connections,
+  presenters,
+  viewers,
+  usedQuestions,
+} from "~/lib/websocketHandlers/connection";
+import { getCurrentQuestion } from "~/lib/cache";
 
 function clearQuestionCache() {
   usedQuestions.clear();
   console.log("Question cache cleared");
 }
 
-async function broadcastCurrentQuestion() {
-  const question = await getCurrentQuestion();
+async function broadcastCurrentQuestion(code: string) {
+  const question = await getCurrentQuestion(code);
   if (!question) return;
 
   // Send to all connections
-  connections.forEach((peer) => {
+  connections.forEach((peer: any) => {
     peer.send(
       JSON.stringify({
         type: "SYNC_QUESTION",
@@ -100,7 +45,7 @@ export default eventHandler({
 
         switch (data.type) {
           case "REGISTER_ROLE": {
-            const { role } = data.payload;
+            const { role, game_code } = data.payload;
             if (role === "presenter") {
               presenters.add(peer.id);
               console.log("Registered presenter:", peer.id);
@@ -110,7 +55,7 @@ export default eventHandler({
             }
 
             // After registration, send the initial data
-            const cards = await getCurrentQuestion();
+            const cards = await getCurrentQuestion(game_code);
             peer.send(
               JSON.stringify({
                 type: "SYNC_QUESTION",
@@ -125,8 +70,8 @@ export default eventHandler({
             if (!viewers.has(peer.id)) return;
 
             // Force refresh the cache and broadcast to all
-            await getCurrentQuestion(true);
-            await broadcastCurrentQuestion();
+            await getCurrentQuestion(data.payload.game_code);
+            await broadcastCurrentQuestion(data.payload.game_code);
             break;
           }
 
@@ -134,7 +79,7 @@ export default eventHandler({
             if (!viewers.has(peer.id)) return;
 
             // Broadcast to all presenters
-            presenters.forEach((presenterId) => {
+            presenters.forEach((presenterId: any) => {
               const presenterPeer = connections.get(presenterId);
               if (presenterPeer) {
                 presenterPeer.send(

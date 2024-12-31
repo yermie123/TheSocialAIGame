@@ -9,6 +9,7 @@
     "server": "node server.js"
   },
   "dependencies": {
+    "@cacheable/node-cache": "^1.5.2",
     "@kobalte/core": "^0.13.7",
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.15.0",
@@ -16,7 +17,6 @@
     "animejs": "^3.2.2",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "node-cache": "^5.1.2",
     "pg": "^8.13.1",
     "picnic": "^7.1.0",
     "pocketbase": "^0.24.0",
