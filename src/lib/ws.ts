@@ -2,14 +2,15 @@
 
 import { eventHandler } from "vinxi/http";
 import { getRandomQuestion } from "~/lib/websocketHandlers/questions";
+import { gameEventInitialization } from "./dbHandlers/gameInitialization";
 
 import {
   connections,
   presenters,
   viewers,
   usedQuestions,
-} from "~/lib/websocketHandlers/connection";
-import { getCurrentQuestion } from "~/lib/cache";
+} from "./websocketHandlers/connection";
+import { getCurrentQuestion } from "./cache";
 
 function clearQuestionCache() {
   usedQuestions.clear();
@@ -45,7 +46,7 @@ export default eventHandler({
 
         switch (data.type) {
           case "REGISTER_ROLE": {
-            const { role, game_code } = data.payload;
+            const { role } = data.payload;
             if (role === "presenter") {
               presenters.add(peer.id);
               console.log("Registered presenter:", peer.id);
@@ -54,12 +55,12 @@ export default eventHandler({
               console.log("Registered viewer:", peer.id);
             }
 
-            // After registration, send the initial data
-            const cards = await getCurrentQuestion(game_code);
-            peer.send(
+            // After registration, generate a game instance in postgres, and take the code
+            const code: string | void = await gameEventInitialization();
+            await peer.send(
               JSON.stringify({
-                type: "SYNC_QUESTION",
-                payload: cards,
+                type: "RECEIVE_CONNECTION_CODE",
+                payload: await code,
               })
             );
             break;

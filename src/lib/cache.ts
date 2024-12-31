@@ -7,7 +7,7 @@ const cache = new NodeCache();
 interface CacheEntry {
   currentQuestion: string;
   lastFetchTime: number;
-  usedQuestions: string[];
+  usedQuestions: Set<string>;
   MAX_RETRY_ATTEMPTS: number;
 }
 
@@ -17,7 +17,7 @@ const getCurrentQuestion = (code: string): string => {
   return cacheData.currentQuestion;
 };
 
-const getUsedQuestions = (code: string): string[] => {
+const getUsedQuestions = (code: string): Set<string> => {
   // retrieve used questions from cache
   const usedQuestions = cache.get<CacheEntry>(code).usedQuestions;
   return usedQuestions;
