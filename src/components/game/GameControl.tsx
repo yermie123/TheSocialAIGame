@@ -15,11 +15,19 @@ interface GameState {
       [key: string]: any;
     };
   } | null;
-  team1Players: {
-    [key: string]: number;
+  team1: {
+    teamName: string;
+    teamColor: string;
+    players: {
+      [key: string]: number;
+    };
   } | null;
-  team2Players: {
-    [key: string]: number;
+  team2: {
+    teamName: string;
+    teamColor: string;
+    players: {
+      [key: string]: number;
+    };
   } | null;
 }
 
@@ -28,8 +36,8 @@ const GameControl: Component = () => {
   const [gameState, gameStateSet] = createSignal<GameState>({
     state: "prepping",
     currentQuestion: null,
-    team1Players: null,
-    team2Players: null,
+    team1: null,
+    team2: null,
   });
   const [mountCheck, mountCheckSet] = createSignal(false);
 

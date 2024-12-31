@@ -8,10 +8,15 @@ const GamePrep: Component<{
 }> = (props) => {
   const [team1Values, team1ValuesSet] = createStore<any>([]);
   const [team2Values, team2ValuesSet] = createStore<any>([]);
+  const [teamNames, teamNamesSet] = createStore<any>({
+    team1: "Team 1",
+    team2: "Team 2",
+  });
 
   createEffect(() => {
     console.log("team1: ", team1Values);
     console.log("team2: ", team2Values);
+    console.log("team names: ", teamNames);
   });
 
   const handleFinalize = () => {
@@ -38,8 +43,16 @@ const GamePrep: Component<{
     props.gameStateSet((prev: any) => ({
       ...prev,
       state: "playing",
-      team1Players: team1,
-      team2Players: team2,
+      team1: {
+        name: teamNames.team1,
+        color: "default1",
+        players: team1,
+      },
+      team2: {
+        name: teamNames.team2,
+        color: "default2",
+        players: team2,
+      },
     }));
   };
 
@@ -47,9 +60,27 @@ const GamePrep: Component<{
     <div id="game-prep">
       <h1>Game Prep</h1>
       <h3>Add Team Names and Players Below</h3>
+      <h4>Click on the Team Names to Edit them</h4>
       <div id="teams">
         <div id="team1">
-          <h2>Team 1</h2>
+          <h2
+            contentEditable={true}
+            onInput={(e: any) =>
+              teamNamesSet((prev: any) => ({
+                ...prev,
+                team1: e.target.innerText,
+              }))
+            }
+          >
+            Team 1
+          </h2>
+          <label for="team1Color">{teamNames.team1} Color:</label>
+          <input
+            type="color"
+            id="team1Color"
+            name="team1Color"
+            value="#C3EB78"
+          />
           <PlayerInput
             team={1}
             tVSet={team1ValuesSet}
@@ -58,7 +89,24 @@ const GamePrep: Component<{
           />
         </div>
         <div id="team2">
-          <h2>Team 2</h2>
+          <h2
+            contentEditable={true}
+            onInput={(e: any) =>
+              teamNamesSet((prev: any) => ({
+                ...prev,
+                team2: e.target.innerText,
+              }))
+            }
+          >
+            Team 2
+          </h2>
+          <label for="team2Color">{teamNames.team2} Color:</label>
+          <input
+            type="color"
+            id="team2Color"
+            name="team2Color"
+            value="#AB92BF"
+          />
           <PlayerInput
             team={2}
             tVSet={team2ValuesSet}
@@ -146,7 +194,7 @@ const PlayerInput: Component<{
         )}
       </For>
       <button onClick={() => props.tVSet((prev: any) => [...prev, ""])}>
-        Add Another Player
+        Add Player
       </button>
     </>
   );
