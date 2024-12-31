@@ -1,4 +1,12 @@
-import { createSignal, onMount, For, Show, Switch, Match } from "solid-js";
+import {
+  createSignal,
+  onMount,
+  For,
+  Show,
+  Switch,
+  Match,
+  createEffect,
+} from "solid-js";
 import { createStore } from "solid-js/store";
 import { Title } from "@solidjs/meta";
 import type { Component } from "solid-js";
@@ -33,8 +41,7 @@ const GameAdmin: Component = () => {
         if (data.payload === "403") {
           alert("Invalid connection code");
         } else {
-          // Save connection code in localStorage
-          updateLSBasic("connectionCode", data.payload.code);
+          // !WARNING: THERE IS NO ADDITION TO LOCAL STORAGE FOR CONNECTION CODES AT THE MOMENT
           connectionCodeSet(data.payload.code);
 
           // If game has been created, start the game
@@ -52,23 +59,32 @@ const GameAdmin: Component = () => {
       if (data.type === "SYNC_QUESTION") {
         questionSet(data.payload);
 
-        // Set properListGen in order
-        let tempList1 = [];
-        for (let i = 0; i < data.payload.answers.length; i++) {
-          if (data.payload.answers[i].votes > 1)
-            tempList1.push({ ...data.payload.answers[i], visible: true });
-        }
-        tempList1.sort((a, b) => b.votes - a.votes);
+        // Validation Check
+        if (
+          question().question !== "Loading..." &&
+          question().question !== "" &&
+          question().id !== ""
+        ) {
+          progressSet("playing");
 
-        let tempList2 = [];
-        for (let i = 0; i < data.payload.answers.length; i++) {
-          if (data.payload.answers[i].votes === 1)
-            tempList2.push({ ...data.payload.answers[i], visible: true });
-        }
+          // Set properListGen in order
+          let tempList1 = [];
+          for (let i = 0; i < data.payload.answers.length; i++) {
+            if (data.payload.answers[i].votes > 1)
+              tempList1.push({ ...data.payload.answers[i], visible: true });
+          }
+          tempList1.sort((a, b) => b.votes - a.votes);
 
-        properListGenSet(tempList1);
-        onePointersSet(tempList2);
-        console.log("Proper list: ", properListGen);
+          let tempList2 = [];
+          for (let i = 0; i < data.payload.answers.length; i++) {
+            if (data.payload.answers[i].votes === 1)
+              tempList2.push({ ...data.payload.answers[i], visible: true });
+          }
+
+          properListGenSet(tempList1);
+          onePointersSet(tempList2);
+          console.log("Proper list: ", properListGen);
+        }
       }
     };
 
@@ -98,6 +114,18 @@ const GameAdmin: Component = () => {
     );
   };
 
+  const newQuestion = () => {
+    console.log("Sending new question request to server");
+    socket()?.send(
+      JSON.stringify({
+        type: "REQUEST_NEW_QUESTION",
+        payload: {
+          code: connectionCode(),
+        },
+      })
+    );
+  };
+
   return (
     <main>
       <Title>Game Admin</Title>
@@ -115,7 +143,8 @@ const GameAdmin: Component = () => {
         </Match>
         <Match when={progress() === "post-approval"}>
           <div id="waiting">
-            <h3>Waiting for Game Question Details...</h3>
+            <h3>Press Button Below to Generate Question</h3>
+            <button onClick={() => newQuestion()}>Generate Question</button>
           </div>
         </Match>
         <Match when={progress() === "playing"}>

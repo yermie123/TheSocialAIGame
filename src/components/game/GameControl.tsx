@@ -1,4 +1,11 @@
-import { createSignal, onMount, Show, Switch, Match } from "solid-js";
+import {
+  createSignal,
+  onMount,
+  Show,
+  Switch,
+  Match,
+  createEffect,
+} from "solid-js";
 import { createStore } from "solid-js/store";
 import type { Component } from "solid-js";
 import GamePrep from "~/components/game/GamePrep";
@@ -85,6 +92,7 @@ const GameControl: Component = () => {
           break;
 
         case "SYNC_QUESTION":
+          processQuestion(data.payload);
           questionSet(data.payload);
 
           // Set properListGen in order
@@ -126,6 +134,10 @@ const GameControl: Component = () => {
 
     setSocket(ws);
   });
+
+  const processQuestion = (questionData: any) => {
+    console.log("Question data: ", questionData);
+  };
 
   return (
     <div id="game-control">

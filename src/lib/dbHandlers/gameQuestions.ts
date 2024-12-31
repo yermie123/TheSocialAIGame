@@ -1,7 +1,7 @@
 "use server";
-import cache from "~/lib/cache";
-import type { CacheEntry } from "~/lib/cache";
-import { pool } from "~/lib/database";
+import cache from "../cache";
+import type { CacheEntry } from "../cache";
+import { pool } from "../database";
 
 const getRandomQuestion = async () => {
   console.log("Getting random question");
@@ -17,9 +17,24 @@ const getRandomQuestion = async () => {
 };
 
 async function getUniqueRandomQuestion(code: string): Promise<any> {
+  // If certain properties dont exist on cache yet, populate them and return
   let attempts = 0;
   let question: any;
   let cacheData = cache.get<CacheEntry>(code);
+  const newData = {
+    ...cacheData,
+  };
+
+  if (!cacheData.usedQuestions) {
+    newData.usedQuestions = [];
+  }
+
+  if (!cacheData.currentQuestion) {
+    const result = await getRandomQuestion();
+    newData.currentQuestion = await result.id;
+    newData.usedQuestions.push(result.id);
+    return result;
+  }
 
   console.log("Attempts: ", attempts);
 
@@ -27,8 +42,8 @@ async function getUniqueRandomQuestion(code: string): Promise<any> {
     question = getRandomQuestion();
 
     // If we haven't used this question before, use it
-    if (question && !cacheData.usedQuestions.has(question.id)) {
-      cacheData.usedQuestions.add(question.id);
+    if (question && !newData.usedQuestions.includes(question.id)) {
+      newData.usedQuestions.push(question.id);
       return question;
     }
 
@@ -43,4 +58,4 @@ async function getUniqueRandomQuestion(code: string): Promise<any> {
   return question;
 }
 
-export { getUniqueRandomQuestion, getRandomQuestion };
+export { getUniqueRandomQuestion };

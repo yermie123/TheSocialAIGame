@@ -1,8 +1,8 @@
 "use server";
 
 import { eventHandler } from "vinxi/http";
-import { getRandomQuestion } from "~/lib/websocketHandlers/questions";
 import { gameEventInitialization } from "./dbHandlers/gameInitialization";
+import { getUniqueRandomQuestion } from "./dbHandlers/gameQuestions";
 import type { CacheEntry } from "./cache";
 import cache from "./cache";
 
@@ -14,6 +14,8 @@ import {
   MAX_RETRY_ATTEMPTS,
 } from "./websocketHandlers/connection";
 import { getCurrentQuestion } from "./cache";
+
+const WSCONNECTIONS = new Map();
 
 function clearQuestionCache() {
   usedQuestions.clear();
@@ -69,6 +71,7 @@ export default eventHandler({
                   presenter: peer.id,
                 },
               };
+              WSCONNECTIONS.set(peer.id, peer);
               let cacheData = await cache.set(code as string, cacheEntry);
             } else if (role === "viewer") {
               console.log("Accepting viewer: ", peer.id);
@@ -91,6 +94,7 @@ export default eventHandler({
                   ...cacheDataOG,
                   peers: { ...cacheDataOG.peers, viewer: peer.id },
                 };
+                WSCONNECTIONS.set(peer.id, peer);
                 cache.set(data.payload.code, newData);
                 console.log("New Data: ", cache.get(data.payload.code));
                 let currQuest = "";
@@ -119,12 +123,71 @@ export default eventHandler({
           }
 
           case "REQUEST_NEW_QUESTION": {
-            // Only allow viewers to request new questions
-            if (!viewers.has(peer.id)) return;
+            // ! TODO: Only allow viewers to request new questions
+            // if (!viewers.has(peer.id)) {
+            //   peer.send(
+            //     JSON.stringify({
+            //       type: "SYNC_QUESTION",
+            //       payload: 403,
+            //     })
+            //   );
+            //   return;
+            // }
 
-            // Force refresh the cache and broadcast to all
-            await getCurrentQuestion(data.payload.game_code);
-            await broadcastCurrentQuestion(data.payload.game_code);
+            // Check if connection code exists
+            const { code } = data.payload;
+            if (code === null || code === "") {
+              peer.send(
+                JSON.stringify({
+                  type: "SYNC_QUESTION",
+                  payload: 403,
+                })
+              );
+              return;
+            }
+
+            // Check if code even exists in cache
+            const cacheData = cache.get(code);
+            const cD = {
+              ...cacheData,
+            };
+            if (!cacheData) {
+              console.log("Cache with provided code does not exist");
+              peer.send(
+                JSON.stringify({
+                  type: "SYNC_QUESTION",
+                  payload: 403,
+                })
+              );
+              return;
+            }
+
+            // If code passes all checks, send a new question to both presenters and viewers
+            const question = await getUniqueRandomQuestion(code);
+            if (question === "too many attempts") {
+              peer.send(
+                JSON.stringify({
+                  type: "SYNC_QUESTION",
+                  payload: 508,
+                })
+              );
+            } else {
+              let viewerPeer = WSCONNECTIONS.get(cD.peers.viewer);
+              let presenterPeer = WSCONNECTIONS.get(cD.peers.presenter);
+              // Broadcast to presenter and viewer of the same code
+              viewerPeer.send(
+                JSON.stringify({
+                  type: "SYNC_QUESTION",
+                  payload: question,
+                })
+              );
+              presenterPeer.send(
+                JSON.stringify({
+                  type: "SYNC_QUESTION",
+                  payload: question,
+                })
+              );
+            }
             break;
           }
 

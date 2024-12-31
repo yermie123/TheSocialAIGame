@@ -6,7 +6,7 @@ const cache = new NodeCache();
 
 interface CacheEntry {
   currentQuestion?: string;
-  usedQuestions?: Set<string>;
+  usedQuestions?: any[];
   MAX_RETRY_ATTEMPTS: number;
   peers: {
     presenter: string;
