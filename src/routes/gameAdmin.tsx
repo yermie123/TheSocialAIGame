@@ -1,7 +1,10 @@
-import { createSignal, onMount, For } from "solid-js";
+import { createSignal, onMount, For, Show, Switch, Match } from "solid-js";
 import { createStore } from "solid-js/store";
 import { Title } from "@solidjs/meta";
 import type { Component } from "solid-js";
+import { updateLSBasic } from "~/lib/localstorage";
+
+import "./gameAdmin.scss";
 
 const GameAdmin: Component = () => {
   const [socket, setSocket] = createSignal<WebSocket | null>(null);
@@ -14,22 +17,37 @@ const GameAdmin: Component = () => {
   });
   const [properListGen, properListGenSet] = createStore<any>([]);
   const [onePointers, onePointersSet] = createStore<any>([]);
+  const [connectionCode, connectionCodeSet] = createSignal<string>("");
+  const [progress, progressSet] = createSignal("pre-approval");
 
   onMount(() => {
     const ws = new WebSocket("ws://localhost:3000/ws");
 
-    ws.onopen = () => {
-      // Register as viewer and request initial sync
-      ws.send(
-        JSON.stringify({
-          type: "REGISTER_ROLE",
-          payload: { role: "viewer" },
-        })
-      );
-    };
-
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
+
+      if (data.type === "RECEIVE_CONNECTION_CODE") {
+        console.log("Received connection code: ", data);
+
+        // If payload is 403, there was an improper connection code
+        if (data.payload === "403") {
+          alert("Invalid connection code");
+        } else {
+          // Save connection code in localStorage
+          updateLSBasic("connectionCode", data.payload.code);
+          connectionCodeSet(data.payload.code);
+
+          // If game has been created, start the game
+          if (
+            data.payload.currentQuestion !== null &&
+            data.payload.currentQuestion !== ""
+          ) {
+            progressSet("playing");
+          } else {
+            progressSet("post-approval");
+          }
+        }
+      }
 
       if (data.type === "SYNC_QUESTION") {
         questionSet(data.payload);
@@ -62,6 +80,15 @@ const GameAdmin: Component = () => {
     }, 30000); // Sync every 30 seconds
   });
 
+  const setCode = (inputCode: string) => {
+    socket()?.send(
+      JSON.stringify({
+        type: "REGISTER_ROLE",
+        payload: { role: "viewer", code: connectionCode() },
+      })
+    );
+  };
+
   const revealCard = (cardName: string) => {
     socket()?.send(
       JSON.stringify({
@@ -75,60 +102,79 @@ const GameAdmin: Component = () => {
     <main>
       <Title>Game Admin</Title>
       <h1>Game Admin</h1>
-      <div
-        id="answers"
-        style={{ display: "flex", "flex-direction": "row", gap: "10em" }}
-      >
-        <div
-          id="gen-answers"
-          style={{
-            display: "flex",
-            "flex-direction": "column",
-            gap: "0.5em",
-            "flex-wrap": "wrap",
-          }}
-        >
-          <h3>Proper List</h3>
-          <For each={properListGen}>
-            {(answer) => (
-              <button onClick={() => revealCard(answer.answer)}>
-                {answer.answer}: {answer.votes}
-              </button>
-            )}
-          </For>
-        </div>
-        <div
-          id="one-pointers"
-          style={{
-            display: "flex",
-            "flex-direction": "column",
-            gap: "0.5em",
-            "flex-wrap": "wrap",
-          }}
-        >
-          <h3>One Pointers</h3>
-          <For each={onePointers}>
-            {(answer) => (
-              <button onClick={() => revealCard(answer.answer)}>
-                {answer.answer}: {answer.votes}
-              </button>
-            )}
-          </For>
-        </div>
-      </div>
+      <Switch>
+        <Match when={progress() === "pre-approval"}>
+          <div id="need-code">
+            <h2>Enter Connection Code:</h2>
+            <input
+              type="text"
+              onInput={(e) => connectionCodeSet(e.currentTarget.value)}
+            ></input>
+            <button onClick={() => setCode(connectionCode())}>Submit</button>
+          </div>
+        </Match>
+        <Match when={progress() === "post-approval"}>
+          <div id="waiting">
+            <h3>Waiting for Game Question Details...</h3>
+          </div>
+        </Match>
+        <Match when={progress() === "playing"}>
+          <div
+            id="answers"
+            style={{ display: "flex", "flex-direction": "row", gap: "10em" }}
+          >
+            <div
+              id="gen-answers"
+              style={{
+                display: "flex",
+                "flex-direction": "column",
+                gap: "0.5em",
+                "flex-wrap": "wrap",
+              }}
+            >
+              <h3>Proper List</h3>
+              <For each={properListGen}>
+                {(answer) => (
+                  <button onClick={() => revealCard(answer.answer)}>
+                    {answer.answer}: {answer.votes}
+                  </button>
+                )}
+              </For>
+            </div>
+            <div
+              id="one-pointers"
+              style={{
+                display: "flex",
+                "flex-direction": "column",
+                gap: "0.5em",
+                "flex-wrap": "wrap",
+              }}
+            >
+              <h3>One Pointers</h3>
+              <For each={onePointers}>
+                {(answer) => (
+                  <button onClick={() => revealCard(answer.answer)}>
+                    {answer.answer}: {answer.votes}
+                  </button>
+                )}
+              </For>
+            </div>
+          </div>
 
-      <button
-        class="error"
-        onClick={() =>
-          socket()?.send(
-            JSON.stringify({
-              type: "REQUEST_NEW_QUESTION", // This should be a JSON object with a type property
-            })
-          )
-        }
-      >
-        Request New Question
-      </button>
+          <button
+            class="error"
+            onClick={() =>
+              socket()?.send(
+                JSON.stringify({
+                  type: "REQUEST_NEW_QUESTION", // This should be a JSON object with a type property
+                })
+              )
+            }
+          >
+            Request New Question
+          </button>
+        </Match>
+      </Switch>
     </main>
   );
 };

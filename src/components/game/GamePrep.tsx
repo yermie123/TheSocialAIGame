@@ -5,6 +5,7 @@ import type { Component } from "solid-js";
 const GamePrep: Component<{
   gameState: () => any;
   gameStateSet: (value: any) => void;
+  connectionCode: () => any;
 }> = (props) => {
   const [team1Values, team1ValuesSet] = createStore<any>([]);
   const [team2Values, team2ValuesSet] = createStore<any>([]);
@@ -146,7 +147,7 @@ const GamePrep: Component<{
         <h3>
           Game Host URL: {import.meta.env.VITE_COMMON_URL_SIMPLIFIED}/gameadmin
         </h3>
-        <h3>Code: TODO</h3>
+        <h3>Code: {props.connectionCode()}</h3>
       </div>
     </div>
   );
