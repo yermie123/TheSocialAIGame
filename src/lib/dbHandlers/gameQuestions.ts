@@ -30,25 +30,15 @@ async function getUniqueRandomQuestion(code: string): Promise<any> {
     newData.usedQuestions = [];
   }
 
-  // If currentQuestion doesn't exist, create it
-  if (!cacheData.currentQuestion) {
-    const result = await getRandomQuestion();
-    newData.currentQuestion = await result.id; // Set current question
-    newData.usedQuestions.push(result.id); // Add current question to used questions
-
-    // Update cache
-    cache.set(code, newData);
-    return result;
-  }
-
   console.log("Attempts: ", attempts);
 
   while (attempts < cacheData.MAX_RETRY_ATTEMPTS) {
-    question = getRandomQuestion();
+    question = await getRandomQuestion();
 
     // If we haven't used this question before, use it
     if (question && !newData.usedQuestions.includes(question.id)) {
-      newData.usedQuestions.push(question.id);
+      newData.currentQuestion = await question.id;
+      newData.usedQuestions.push(await question.id);
       return question;
     }
 
