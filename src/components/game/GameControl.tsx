@@ -59,6 +59,8 @@ const GameControl: Component = () => {
   const [onePointers, onePointersSet] = createStore<any>([]);
   const [socket, setSocket] = createSignal<WebSocket | null>(null);
   const [connectionCode, connectionCodeSet] = createSignal<string>("");
+  const [existingConnectionCode, existingConnectionCodeSet] =
+    createSignal<string>("");
 
   onMount(() => {
     // Fetch any updates of game state from localstorage
@@ -84,6 +86,10 @@ const GameControl: Component = () => {
           // Save connection code in localStorage
           updateLSBasic("connectionCode", data.payload);
           connectionCodeSet(data.payload);
+          gameStateSet((prev: any) => ({
+            ...prev,
+            state: "prepping",
+          }));
           break;
 
         case "SYNC_QUESTION":
@@ -130,20 +136,24 @@ const GameControl: Component = () => {
     setSocket(ws);
   });
 
-  const startNewGame = () => {
-    // Register a role for a new game as presenter
-    socket()?.send(
-      JSON.stringify({
-        type: "REGISTER_ROLE",
-        payload: { role: "presenter" },
-      })
-    );
-
-    // Set game state to prepping
-    gameStateSet((prev: any) => ({
-      ...prev,
-      state: "prepping",
-    }));
+  const startGame = (code: string = "n/a") => {
+    if (code === "n/a") {
+      // Register a role for a new game as presenter
+      socket()?.send(
+        JSON.stringify({
+          type: "REGISTER_ROLE",
+          payload: { role: "presenter" },
+        })
+      );
+    } else if (code !== "n/a") {
+      // Register a role for an existing game as player
+      socket()?.send(
+        JSON.stringify({
+          type: "REGISTER_ROLE",
+          payload: { role: "existing-presenter", code: code },
+        })
+      );
+    }
   };
 
   const processQuestion = (questionData: any) => {
@@ -157,8 +167,16 @@ const GameControl: Component = () => {
           <Match when={gameState().state === "before-start"}>
             <div id="before-start">
               <h3>Would You Like to Play a New Game?</h3>
-              <button onClick={() => startNewGame()}>Start a New Game</button>
-              <button>I have an existing game that was disconnected</button>
+              <button onClick={() => startGame()}>Start a New Game</button>
+              <button onClick={() => startGame(existingConnectionCode())}>
+                I have an existing game that was disconnected
+              </button>
+              <input
+                placeholder="Enter An Existing Code if You Have One"
+                onInput={(e) =>
+                  existingConnectionCodeSet(e.currentTarget.value)
+                }
+              />
             </div>
           </Match>
           <Match when={gameState().state === "prepping"}>
