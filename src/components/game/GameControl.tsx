@@ -10,7 +10,7 @@ import { createStore } from "solid-js/store";
 import type { Component } from "solid-js";
 import GamePrep from "~/components/game/GamePrep";
 import GamePlay from "~/components/game/GamePlay";
-import { updateLSBasic } from "~/lib/localstorage";
+import { updateLSBasic } from "~/lib/client/localstorage";
 
 interface GameState {
   state: string;

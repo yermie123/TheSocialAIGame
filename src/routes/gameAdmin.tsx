@@ -10,7 +10,7 @@ import {
 import { createStore } from "solid-js/store";
 import { Title } from "@solidjs/meta";
 import type { Component } from "solid-js";
-import { updateLSBasic } from "~/lib/localstorage";
+import { updateLSBasic } from "~/lib/client/localstorage";
 
 import "./gameAdmin.scss";
 
