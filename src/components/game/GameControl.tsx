@@ -42,7 +42,7 @@ interface GameState {
 const GameControl: Component = () => {
   // This is the shared state in the game
   const [gameState, gameStateSet] = createSignal<GameState>({
-    state: "prepping",
+    state: "before-start",
     currentQuestion: null,
     team1: null,
     team2: null,
@@ -72,12 +72,7 @@ const GameControl: Component = () => {
     const ws = new WebSocket("ws://localhost:3000/ws");
 
     ws.onopen = () => {
-      ws.send(
-        JSON.stringify({
-          type: "REGISTER_ROLE",
-          payload: { role: "presenter" },
-        })
-      );
+      console.log("Connected to WebSocket server");
     };
 
     ws.onmessage = (event) => {
@@ -135,6 +130,22 @@ const GameControl: Component = () => {
     setSocket(ws);
   });
 
+  const startNewGame = () => {
+    // Register a role for a new game as presenter
+    socket()?.send(
+      JSON.stringify({
+        type: "REGISTER_ROLE",
+        payload: { role: "presenter" },
+      })
+    );
+
+    // Set game state to prepping
+    gameStateSet((prev: any) => ({
+      ...prev,
+      state: "prepping",
+    }));
+  };
+
   const processQuestion = (questionData: any) => {
     console.log("Question data: ", questionData);
   };
@@ -143,6 +154,13 @@ const GameControl: Component = () => {
     <div id="game-control">
       <Show when={mountCheck()} fallback={<h1>Loading...</h1>}>
         <Switch>
+          <Match when={gameState().state === "before-start"}>
+            <div id="before-start">
+              <h3>Would You Like to Play a New Game?</h3>
+              <button onClick={() => startNewGame()}>Start a New Game</button>
+              <button>I have an existing game that was disconnected</button>
+            </div>
+          </Match>
           <Match when={gameState().state === "prepping"}>
             <GamePrep
               gameState={gameState}

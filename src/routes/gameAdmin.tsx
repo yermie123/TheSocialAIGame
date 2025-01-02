@@ -137,6 +137,7 @@ const GameAdmin: Component = () => {
             <input
               type="text"
               onInput={(e) => connectionCodeSet(e.currentTarget.value)}
+              id="connection-code"
             ></input>
             <button onClick={() => setCode(connectionCode())}>Submit</button>
           </div>

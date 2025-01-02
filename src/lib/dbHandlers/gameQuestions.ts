@@ -25,14 +25,19 @@ async function getUniqueRandomQuestion(code: string): Promise<any> {
     ...cacheData,
   };
 
+  // If usedQuestions doesn't exist, create it
   if (!cacheData.usedQuestions) {
     newData.usedQuestions = [];
   }
 
+  // If currentQuestion doesn't exist, create it
   if (!cacheData.currentQuestion) {
     const result = await getRandomQuestion();
-    newData.currentQuestion = await result.id;
-    newData.usedQuestions.push(result.id);
+    newData.currentQuestion = await result.id; // Set current question
+    newData.usedQuestions.push(result.id); // Add current question to used questions
+
+    // Update cache
+    cache.set(code, newData);
     return result;
   }
 
@@ -50,10 +55,13 @@ async function getUniqueRandomQuestion(code: string): Promise<any> {
     attempts++;
   }
 
-  // If we've used all questions or hit max retries, clear cache and try once more
+  // If we've used all questions or hit max retries, return
   if (attempts >= cacheData.MAX_RETRY_ATTEMPTS) {
     return "too many attempts";
   }
+
+  // Update cache
+  cache.set(code, newData);
 
   return question;
 }
