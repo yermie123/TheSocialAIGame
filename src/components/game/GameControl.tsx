@@ -92,6 +92,14 @@ const GameControl: Component = () => {
           }));
           break;
 
+        case "INFO_UPDATE":
+          if (data.payload === 403) {
+            alert("Update to database and server cache failed");
+          } else {
+            console.log("Update to database and server cache successful");
+          }
+          break;
+
         case "SYNC_QUESTION":
           processQuestion(data.payload);
           questionSet(data.payload);
@@ -156,6 +164,34 @@ const GameControl: Component = () => {
     }
   };
 
+  const updateTeamsFromState = () => {
+    if (!gameState().team1 || !gameState().team2) {
+      alert("Please add at least one player to each team");
+      return;
+    }
+
+    if (connectionCode() === "") {
+      alert(
+        "Error: Connection Code missing. If this came up, contact the developer, this is a bug."
+      );
+      return;
+    }
+
+    socket()?.send(
+      JSON.stringify({
+        type: "UPDATE_INFO",
+        payload: {
+          infoType: "teams",
+          info: {
+            team1: gameState().team1,
+            team2: gameState().team2,
+          },
+          code: connectionCode(),
+        },
+      })
+    );
+  };
+
   const processQuestion = (questionData: any) => {
     console.log("Question data: ", questionData);
   };
@@ -184,6 +220,7 @@ const GameControl: Component = () => {
               gameState={gameState}
               gameStateSet={gameStateSet}
               connectionCode={connectionCode}
+              updateTeamsFromState={updateTeamsFromState}
             />
           </Match>
           <Match when={gameState().state === "playing"}>

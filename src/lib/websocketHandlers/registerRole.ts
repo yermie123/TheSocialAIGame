@@ -4,6 +4,7 @@ import cache from "../cache";
 import type { CacheEntry } from "../cache";
 import { pool } from "../database";
 import { getUniqueRandomQuestion } from "../dbHandlers/gameQuestions";
+import { gameEventTeamChange } from "../dbHandlers/gameEventHandlers";
 
 const registerRole = async (
   peer: any,
@@ -13,6 +14,17 @@ const registerRole = async (
 ) => {
   if (role === "presenter") {
     console.log("Registered presenter:", peer.id);
+
+    // Check if the presenter has provided team data
+    if (payload.teams === null || payload.teams === "") {
+      await peer.send(
+        JSON.stringify({
+          type: "RECEIVE_CONNECTION_CODE",
+          payload: 400,
+        })
+      );
+      return;
+    }
 
     // After registration, generate a game instance in postgres, and take the code
     const code: string | void = await gameEventInitialization();
@@ -86,6 +98,8 @@ const registerRole = async (
       // Otherwise, update the cache, and send the data to the peer
       let newData: CacheEntry = {
         MAX_RETRY_ATTEMPTS: MAX_RETRY_ATTEMPTS,
+        team1: result.rows[0].team1,
+        team2: result.rows[0].team2,
         peers: {
           presenter: peer.id,
         },

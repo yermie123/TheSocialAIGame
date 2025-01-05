@@ -8,6 +8,20 @@ interface CacheEntry {
   currentQuestion?: string;
   usedQuestions?: any[];
   MAX_RETRY_ATTEMPTS: number;
+  team1?: {
+    teamName: string;
+    teamColor: string;
+    players: {
+      [key: string]: number;
+    };
+  };
+  team2?: {
+    teamName: string;
+    teamColor: string;
+    players: {
+      [key: string]: number;
+    };
+  };
   peers: {
     presenter: string;
     viewer?: string;

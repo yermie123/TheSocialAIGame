@@ -6,6 +6,7 @@ const GamePrep: Component<{
   gameState: () => any;
   gameStateSet: (value: any) => void;
   connectionCode: () => any;
+  updateTeamsFromState: () => void;
 }> = (props) => {
   const [team1Values, team1ValuesSet] = createStore<any>([]);
   const [team2Values, team2ValuesSet] = createStore<any>([]);
@@ -63,6 +64,9 @@ const GamePrep: Component<{
         players: team2,
       },
     }));
+
+    // Last, but not least, make sure every part of the game is updated about the teams
+    props.updateTeamsFromState();
   };
 
   return (

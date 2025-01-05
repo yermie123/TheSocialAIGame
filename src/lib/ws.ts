@@ -7,6 +7,8 @@ import registerRole from "./websocketHandlers/registerRole";
 
 import { usedQuestions } from "./websocketHandlers/connection";
 import { getCurrentQuestion } from "./cache";
+import type { Teams } from "./dbHandlers/gameEventHandlers";
+import { gameEventTeamChange } from "./dbHandlers/gameEventHandlers";
 
 const WSCONNECTIONS = new Map();
 
@@ -31,6 +33,37 @@ export default eventHandler({
           case "REGISTER_ROLE": {
             const { role } = data.payload;
             registerRole(peer, role, WSCONNECTIONS, data.payload);
+            break;
+          }
+
+          case "UPDATE_INFO": {
+            const { infoType, info, code } = data.payload;
+            if (infoType === "teams") {
+              // Also, update the database with the team data
+              const teamChangeRes = await gameEventTeamChange(
+                info as Teams,
+                undefined,
+                code as string
+              );
+
+              if (teamChangeRes === "error") {
+                peer.send(
+                  JSON.stringify({
+                    type: "INFO_UPDATE",
+                    payload: 403,
+                  })
+                );
+                return;
+              } else {
+                peer.send(
+                  JSON.stringify({
+                    type: "INFO_UPDATE",
+                    payload: 200,
+                  })
+                );
+              }
+            }
+
             break;
           }
 
