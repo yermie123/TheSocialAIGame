@@ -10,6 +10,7 @@ import { createStore } from "solid-js/store";
 import type { Component } from "solid-js";
 import GamePrep from "~/components/game/GamePrep";
 import GamePlay from "~/components/game/GamePlay";
+import PlayerScore from "~/components/game/PlayerScore";
 import { updateLSBasic } from "~/lib/client/localstorage";
 
 interface GameState {
@@ -232,10 +233,14 @@ const GameControl: Component = () => {
               onePointers={onePointers}
             />
           </Match>
+          <Match when={gameState().state === "score-check"}>
+            <PlayerScore gameState={gameState} />
+          </Match>
         </Switch>
       </Show>
     </div>
   );
 };
 
+export type { GameState };
 export default GameControl;

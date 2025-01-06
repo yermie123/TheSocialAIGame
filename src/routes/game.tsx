@@ -30,7 +30,7 @@ const Game: Component = () => {
           <Rules />
         </Match>
         <Match when={gameRoutingState() === "current-question-details"}>
-          <h1>Leaderboard</h1>
+          <h2>Current Question Details</h2>
         </Match>
       </Switch>
     </main>
