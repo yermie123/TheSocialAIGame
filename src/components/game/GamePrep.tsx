@@ -31,16 +31,16 @@ const GamePrep: Component<{
     finalizeButton.focus();
 
     // Filter out empty values from each team and set them to 0
-    const team1: any = {};
+    const team1 = new Map<string, number>();
     team1Values.forEach((e: any) => {
       if (e !== "") {
-        team1[e] = 0;
+        team1.set(e, 0);
       }
     });
-    const team2: any = {};
+    const team2 = new Map<string, number>();
     team2Values.forEach((e: any) => {
       if (e !== "") {
-        team2[e] = 0;
+        team2.set(e, 0);
       }
     });
 
@@ -56,12 +56,12 @@ const GamePrep: Component<{
       team1: {
         name: teamDetails.team1Name,
         color: teamDetails.team1Color,
-        players: team1,
+        players: new Map(team1),
       },
       team2: {
         name: teamDetails.team2Name,
         color: teamDetails.team2Color,
-        players: team2,
+        players: new Map(team2),
       },
     }));
 

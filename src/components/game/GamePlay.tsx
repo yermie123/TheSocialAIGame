@@ -18,13 +18,23 @@ const GamePlay: Component<{
     <div id="game-play">
       <h1>Game Play</h1>
       <h2>{props.question().question}</h2>
+      <div id="team1-names" class="team-names">
+        <For each={Object.keys(props.gameState().team1?.players)}>
+          {(player: any) => <p class="player-name">{player}</p>}
+        </For>
+      </div>
+      <div id="team2-names" class="team-names">
+        <For each={Object.keys(props.gameState().team2?.players)}>
+          {(player: any) => <p class="player-name">{player}</p>}
+        </For>
+      </div>
       <div id="answers">
         <div id="gen-answers">
           <h3>Proper List</h3>
           <For each={props.properListGen}>
             {(answer) => (
               <div
-                class={answer.visible ? "answer-show" : "answer"}
+                class={answer.visible ? "answer" : "answer-show"}
                 id={answer.answer}
               >
                 <h2>{answer.answer}</h2>
@@ -38,7 +48,7 @@ const GamePlay: Component<{
           <For each={props.onePointers}>
             {(answer) => (
               <div
-                class={answer.visible ? "answer-show" : "answer"}
+                class={answer.visible ? "answer" : "answer-show"}
                 id={answer.answer}
               >
                 <h2>{answer.answer}</h2>
@@ -48,25 +58,6 @@ const GamePlay: Component<{
           </For>
         </div>
       </div>
-      {/* <input
-        id="answer-input"
-        type="text"
-        placeholder="test"
-        onInput={(e) => {
-          document.getElementById(e.target.value)?.classList.remove("answer");
-          document.getElementById(e.target.value)?.classList.add("answer-show");
-        }}
-      /> */}
-      <button
-        onClick={() =>
-          props.properListGenSet(2, (a: any) => ({
-            ...a,
-            visible: true,
-          }))
-        }
-      >
-        Make random visible
-      </button>
     </div>
   );
 };

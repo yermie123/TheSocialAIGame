@@ -89,12 +89,34 @@ main {
       justify-content: center;
       gap: 1em;
 
+      #team1-names {
+        position: absolute;
+        left: 0;
+        top: 200px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+      }
+
+      #team2-names {
+        position: absolute;
+        right: 0;
+        top: 200px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: flex-start;
+      }
+
       #answers {
         display: flex;
         flex-direction: row;
         align-items: flex-start;
         justify-content: center;
-        gap: 10em;
+        gap: 3em;
 
         #gen-answers,
         #one-pointers {

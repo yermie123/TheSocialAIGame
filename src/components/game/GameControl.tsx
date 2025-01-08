@@ -27,16 +27,12 @@ interface GameState {
   team1: {
     teamName: string;
     teamColor: string;
-    players: {
-      [key: string]: number;
-    };
+    players: Map<string, number>;
   } | null;
   team2: {
     teamName: string;
     teamColor: string;
-    players: {
-      [key: string]: number;
-    };
+    players: Map<string, number>;
   } | null;
 }
 
