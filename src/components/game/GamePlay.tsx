@@ -2,6 +2,16 @@ import { createSignal, onMount, For } from "solid-js";
 import { createStore } from "solid-js/store";
 import type { Component } from "solid-js";
 
+interface gamePlayState {
+  state: "face-off" | "regular";
+  currentOrder: string[];
+  currentPlayer: string;
+}
+
+interface handleOrderPayload {
+  type: "face-off-complete" | "incorrect-answer" | "correct-answer";
+}
+
 const GamePlay: Component<{
   gameState: any;
   question: any;
@@ -9,22 +19,35 @@ const GamePlay: Component<{
   properListGenSet: any;
   onePointers: any;
 }> = (props) => {
+  const [gamePlayState, gamePlayStateSet] = createSignal<gamePlayState>({
+    state: "face-off",
+    currentOrder: [],
+    currentPlayer: "",
+  });
+
   onMount(async () => {
     console.log("Mounted game play");
     console.log("The following is game state: ", props.gameState());
   });
+
+  const handleOrder = (payload: any) => {
+    switch (payload.type) {
+      case "face-off-complete":
+        break;
+    }
+  };
 
   return (
     <div id="game-play">
       <h1>Game Play</h1>
       <h2>{props.question().question}</h2>
       <div id="team1-names" class="team-names">
-        <For each={Object.keys(props.gameState().team1?.players)}>
+        <For each={props.gameState().team1?.players.keys().toArray()}>
           {(player: any) => <p class="player-name">{player}</p>}
         </For>
       </div>
       <div id="team2-names" class="team-names">
-        <For each={Object.keys(props.gameState().team2?.players)}>
+        <For each={props.gameState().team2?.players.keys().toArray()}>
           {(player: any) => <p class="player-name">{player}</p>}
         </For>
       </div>

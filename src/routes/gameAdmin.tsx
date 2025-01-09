@@ -14,6 +14,12 @@ import { updateLSBasic } from "~/lib/client/localstorage";
 
 import "./gameAdmin.scss";
 
+interface gamePlayState {
+  state: "face-off" | "regular";
+  currentOrder: string[];
+  currentPlayer: string;
+}
+
 const GameAdmin: Component = () => {
   const [socket, setSocket] = createSignal<WebSocket | null>(null);
   const [question, questionSet] = createSignal({
@@ -27,6 +33,12 @@ const GameAdmin: Component = () => {
   const [onePointers, onePointersSet] = createStore<any>([]);
   const [connectionCode, connectionCodeSet] = createSignal<string>("");
   const [progress, progressSet] = createSignal("pre-approval");
+  const [teamsInfo, teamsInfoSet] = createSignal<any>(null);
+  const [playState, playStateSet] = createSignal<gamePlayState>({
+    state: "face-off",
+    currentOrder: [],
+    currentPlayer: "",
+  });
 
   onMount(() => {
     const ws = new WebSocket("ws://localhost:3000/ws");
@@ -54,6 +66,14 @@ const GameAdmin: Component = () => {
             progressSet("post-approval");
           }
         }
+      }
+
+      if (data.type === "TEAM_INFO") {
+        console.log("Received team info: ", data.payload);
+        teamsInfoSet({
+          team1: data.payload.team1,
+          team2: data.payload.team2,
+        });
       }
 
       if (data.type === "SYNC_QUESTION") {
@@ -149,6 +169,8 @@ const GameAdmin: Component = () => {
           </div>
         </Match>
         <Match when={progress() === "playing"}>
+          <h2>Question: {question().question}</h2>
+          <h3>Current Player: {playState().currentPlayer}</h3>
           <div
             id="answers"
             style={{ display: "flex", "flex-direction": "row", gap: "10em" }}

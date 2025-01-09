@@ -30,6 +30,15 @@ const GamePrep: Component<{
     ) as HTMLButtonElement;
     finalizeButton.focus();
 
+    // Last error check for empty values
+    if (
+      Object.keys(team1Values).length === 0 ||
+      Object.keys(team2Values).length === 0
+    ) {
+      alert("Please add at least one player to each team");
+      return;
+    }
+
     // Filter out empty values from each team and set them to 0
     const team1 = new Map<string, number>();
     team1Values.forEach((e: any) => {
@@ -43,12 +52,6 @@ const GamePrep: Component<{
         team2.set(e, 0);
       }
     });
-
-    // Last error check for empty values
-    if (Object.keys(team1).length === 0 || Object.keys(team2).length === 0) {
-      alert("Please add at least one player to each team");
-      return;
-    }
 
     props.gameStateSet((prev: any) => ({
       ...prev,

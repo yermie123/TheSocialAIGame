@@ -111,6 +111,16 @@ main {
         justify-content: flex-start;
       }
 
+      .player-name {
+        text-decoration: underline;
+        color: #3f3f3f;
+      }
+
+      .player-name-selected {
+        text-decoration: underline;
+        color: $quinary;
+      }
+
       #answers {
         display: flex;
         flex-direction: row;
